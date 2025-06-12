@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VLM Parser CLI Tool - Production Ready Interface
+VisionParse CLI Tool - Production Ready Interface
 Analyze screenshots and extract UI elements with VLM models
 """
 
@@ -12,7 +12,7 @@ from pathlib import Path
 import logging
 from typing import Optional, Dict, List, Any
 
-from src.vlm_parser import VLMParser
+from src.vlm_parser import VisionParse
 
 def setup_logging(verbose: bool = False):
     """Setup logging configuration"""
@@ -189,7 +189,7 @@ def save_results(results: List[Dict[str, Any]], image_path: Path, output_dir: Op
     
     return json_path
 
-def process_single_image(parser_instance: VLMParser, image_path: Path, args) -> Dict[str, Any]:
+def process_single_image(parser_instance: VisionParse, image_path: Path, args) -> Dict[str, Any]:
     """Process a single image and return results"""
     try:
         if not args.quiet:
@@ -250,7 +250,7 @@ def main():
         # Initialize VLM Parser
         config_path = args.config if args.config.exists() else None
         
-        parser_instance = VLMParser(
+        parser_instance = VisionParse(
             config_path=str(config_path) if config_path else None,
             vlm_type=args.vlm,
             model=args.model,

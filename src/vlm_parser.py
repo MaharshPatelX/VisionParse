@@ -1,5 +1,5 @@
 """
-VLM Parser - Production Ready Python API
+VisionParse - Production Ready Python API
 A comprehensive tool for analyzing screenshots and extracting UI elements using VLM models
 """
 
@@ -13,13 +13,13 @@ import traceback
 from .yolo_detector import detect_ui_elements, draw_boxes_on_image, crop_image_regions
 from .vlm_clients import batch_analyze_regions, get_available_ollama_models
 
-class VLMParserError(Exception):
-    """Custom exception for VLM Parser errors"""
+class VisionParseError(Exception):
+    """Custom exception for VisionParse errors"""
     pass
 
-class VLMParser:
+class VisionParse:
     """
-    Production-ready VLM Parser for UI element analysis
+    Production-ready VisionParse for UI element analysis
     
     Features:
     - Multiple VLM providers (OpenAI, Claude, Gemini, Ollama)
@@ -41,7 +41,7 @@ class VLMParser:
         verbose: bool = False
     ):
         """
-        Initialize VLM Parser
+        Initialize VisionParse
         
         Args:
             config_path: Path to configuration file
@@ -72,7 +72,7 @@ class VLMParser:
         # Validate configuration
         self._validate_config()
         
-        self.logger.info(f"VLM Parser initialized with {self.vlm_type.upper()}")
+        self.logger.info(f"VisionParse initialized with {self.vlm_type.upper()}")
         if self.model:
             self.logger.info(f"Using model: {self.model}")
     
@@ -181,18 +181,18 @@ class VLMParser:
         """Validate configuration and requirements"""
         # Check YOLO model
         if not os.path.exists(self.yolo_model_path):
-            raise VLMParserError(f"YOLO model not found: {self.yolo_model_path}")
+            raise VisionParseError(f"YOLO model not found: {self.yolo_model_path}")
         
         # Check API key for non-local models
         if not any(keyword in self.vlm_type.lower() for keyword in ['ollama', 'local']) and not self.api_key:
-            raise VLMParserError(f"API key required for {self.vlm_type.upper()}")
+            raise VisionParseError(f"API key required for {self.vlm_type.upper()}")
         
         # Validate thresholds
         if not 0 <= self.confidence_threshold <= 1:
-            raise VLMParserError("Confidence threshold must be between 0 and 1")
+            raise VisionParseError("Confidence threshold must be between 0 and 1")
         
         if not 0 <= self.iou_threshold <= 1:
-            raise VLMParserError("IoU threshold must be between 0 and 1")
+            raise VisionParseError("IoU threshold must be between 0 and 1")
     
     def _get_default_model(self) -> str:
         """Get default model for the current VLM type"""
@@ -237,7 +237,7 @@ class VLMParser:
             image_path = Path(image_path)
             
             if not image_path.exists():
-                raise VLMParserError(f"Image not found: {image_path}")
+                raise VisionParseError(f"Image not found: {image_path}")
             
             self.logger.info(f"Analyzing image: {image_path.name}")
             
@@ -412,7 +412,7 @@ class VLMParser:
                         writer.writerow(row)
         
         else:
-            raise VLMParserError(f"Unsupported export format: {format}")
+            raise VisionParseError(f"Unsupported export format: {format}")
         
         self.logger.info(f"Results exported to: {output_path}")
         return str(output_path)

@@ -1,4 +1,4 @@
-# VLM Parser
+# VisionParse
 
 > **AI-powered screenshot analysis tool** that combines YOLO object detection with Vision Language Models to extract UI elements with structured data.
 
@@ -43,7 +43,7 @@
 ### 1. Installation
 ```bash
 git clone <repository>
-cd myomni
+cd visionparse
 pip install -r requirements.txt
 ```
 
@@ -59,10 +59,10 @@ cp .env.example .env
 python main.py
 
 # Direct CLI
-python cli.py screenshot.png --vlm gpt4o
+visionparse screenshot.png --vlm gpt4o
 
 # With custom model
-python cli.py screenshot.png --vlm openai --model gpt-4-turbo-preview
+visionparse screenshot.png --vlm openai --model gpt-4.1
 ```
 
 ## 📖 Usage Guide
@@ -70,27 +70,27 @@ python cli.py screenshot.png --vlm openai --model gpt-4-turbo-preview
 ### Command Line Interface
 ```bash
 # Basic usage
-python cli.py image.png --vlm gpt4o
+visionparse image.png --vlm gpt4o
 
 # Batch processing
-python cli.py *.png --batch --output results/
+visionparse *.png --batch --output results/
 
 # Custom model
-python cli.py image.png --vlm claude --model claude-3-opus-latest
+visionparse image.png --vlm claude --model claude-4-opus
 
 # Local model (free)
-python cli.py image.png --vlm ollama --model llava:latest
+visionparse image.png --vlm ollama --model llava:latest
 
 # JSON output only
-python cli.py image.png --json-only
+visionparse image.png --json-only
 ```
 
 ### Python API
 ```python
-from src.vlm_parser import VLMParser
+from src import VisionParse
 
 # Initialize parser
-parser = VLMParser(vlm_type='gpt4o')
+parser = VisionParse(vlm_type='gpt4o')
 
 # Analyze single image
 results = parser.analyze('screenshot.png')
@@ -100,7 +100,7 @@ print(f"Found {len(results['elements'])} UI elements")
 results = parser.analyze_batch(['img1.png', 'img2.png'])
 
 # Custom model
-parser = VLMParser(vlm_type='openai', model='gpt-4-turbo-preview')
+parser = VisionParse(vlm_type='openai', model='gpt-4.1')
 results = parser.analyze('screenshot.png')
 ```
 
@@ -129,7 +129,7 @@ ollama pull moondream:latest     # 1.7GB - Lightweight
 # 3. Start Ollama
 ollama serve
 
-# 4. Use with VLM Parser
+# 4. Use with VisionParse
 python main.py  # Choose option 4 (Ollama)
 ```
 
@@ -153,9 +153,9 @@ VLM_PROVIDER=gpt4o
 {
   "vlm_type": "gpt4o",
   "default_models": {
-    "openai": "gpt-4o",
-    "anthropic": "claude-3-5-sonnet-20241022",
-    "google": "gemini-1.5-flash",
+    "openai": "gpt-4.1",
+    "anthropic": "claude-4-opus",
+    "google": "gemini-2.5-flash",
     "ollama": "llava:latest"
   },
   "yolo_config": {
@@ -170,27 +170,35 @@ VLM_PROVIDER=gpt4o
 **✅ No Restrictions** - Use any model name without code changes:
 
 ```bash
-# Latest GPT models (even future ones)
---model gpt-4-turbo-preview
---model gpt-5-ultra
+# Latest OpenAI models (2025)
+--model gpt-4.1
+--model gpt-4.1-mini
+--model gpt-4.1-nano
+--model gpt-4o
 
-# Custom Claude models
---model claude-3-opus-latest
+# Latest Anthropic Claude models (2025)
+--model claude-4-opus
 --model claude-4-sonnet
+--model claude-3.7-sonnet
+--model claude-3.5-sonnet
+--model claude-3.5-haiku
 
-# Google's newest models  
---model gemini-2.0-flash-exp
---model gemini-3.0-ultra
+# Latest Google Gemini models (2025)
+--model gemini-2.5-pro
+--model gemini-2.5-flash
+--model gemini-2.0-flash
+--model gemini-2.0-pro
 
 # Local Ollama models
---model llava:13b
---model custom-vision-model:latest
+--model llava:latest
+--model minicpm-v:latest
+--model moondream:latest
 ```
 
 ## 📁 Project Structure
 
 ```
-myomni/
+visionparse/
 ├── src/                    # Core modules
 │   ├── vlm_parser.py      # Main API class
 │   ├── yolo_detector.py   # YOLO detection engine
@@ -257,13 +265,117 @@ Element 2: Search Field
 }
 ```
 
+## 📚 Library Usage
+
+VisionParse can be easily integrated into your Python applications as a library.
+
+### Installation as Library
+```bash
+# Install from local directory
+cd visionparse
+pip install -e .
+
+# Or install normally
+pip install .
+
+# Future: Install from GitHub
+pip install git+https://github.com/yourusername/visionparse.git
+```
+
+### Basic Library Usage
+```python
+from src import VisionParse
+
+# Simple usage
+parser = VisionParse(vlm_type='gpt4o')
+results = parser.analyze('screenshot.png')
+
+# Access results
+print(f"Found {len(results['elements'])} UI elements")
+for element in results['elements']:
+    print(f"- {element['name']}: {element['description']}")
+```
+
+### Integration in Your Application
+```python
+import os
+from src import VisionParse, VisionParseError
+
+class ScreenshotAnalyzer:
+    def __init__(self, vlm_type='gpt4o', model=None):
+        # Load API key from environment
+        api_key = os.getenv('OPENAI_API_KEY')
+        
+        self.parser = VisionParse(
+            vlm_type=vlm_type,
+            model=model,
+            api_key=api_key,
+            verbose=False
+        )
+    
+    def analyze_ui(self, image_path):
+        """Analyze UI elements in screenshot"""
+        try:
+            results = self.parser.analyze(image_path)
+            
+            if results['success']:
+                return {
+                    'elements': results['elements'],
+                    'count': len(results['elements']),
+                    'confidence_avg': sum(el['confidence'] for el in results['elements']) / len(results['elements'])
+                }
+            else:
+                return {'error': results['error']}
+                
+        except VisionParseError as e:
+            return {'error': str(e)}
+    
+    def get_clickable_elements(self, image_path):
+        """Get only clickable UI elements"""
+        results = self.analyze_ui(image_path)
+        
+        if 'elements' in results:
+            clickable_types = ['Button', 'Link', 'Icon', 'Menu']
+            return [
+                el for el in results['elements'] 
+                if el['type'] in clickable_types
+            ]
+        
+        return []
+
+# Usage in your app
+analyzer = ScreenshotAnalyzer(vlm_type='claude', model='claude-4-opus')
+ui_elements = analyzer.analyze_ui('app_screenshot.png')
+clickable_elements = analyzer.get_clickable_elements('app_screenshot.png')
+```
+
+### Environment Configuration
+```python
+# config.py
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+VISIONPARSE_CONFIG = {
+    'vlm_type': os.getenv('VLM_PROVIDER', 'gpt4o'),
+    'api_key': os.getenv('OPENAI_API_KEY'),
+    'confidence_threshold': float(os.getenv('CONFIDENCE_THRESHOLD', '0.05')),
+    'iou_threshold': float(os.getenv('IOU_THRESHOLD', '0.1'))
+}
+
+# Use in your application
+from src import VisionParse
+parser = VisionParse(**VISIONPARSE_CONFIG)
+```
+
 ## 🛠️ Advanced Usage
 
 ### Batch Processing
 ```python
-from src.vlm_parser import VLMParser
+from src import VisionParse
 
-parser = VLMParser(vlm_type='gpt4o')
+parser = VisionParse(vlm_type='gpt4o')
 results = parser.analyze_batch([
     'screen1.png', 'screen2.png', 'screen3.png'
 ], output_dir='results/')
@@ -273,7 +385,7 @@ print(f"Processed {results['summary']['successful']} images")
 
 ### Custom YOLO Settings
 ```python
-parser = VLMParser(
+parser = VisionParse(
     vlm_type='gpt4o',
     confidence_threshold=0.3,  # Higher threshold
     iou_threshold=0.5,         # Different IoU
@@ -304,9 +416,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙋‍♂️ Support
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/myomni/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/myomni/discussions)
-- **Email:** support@vlmparser.com
+- **Issues:** [GitHub Issues](https://github.com/yourusername/visionparse/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/visionparse/discussions)
 
 ---
 

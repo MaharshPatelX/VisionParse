@@ -14,18 +14,18 @@ def read_requirements():
         return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
-    name="vlm-parser",
+    name="visionparse",
     version="1.0.0",
-    author="VLM Parser Team",
-    author_email="contact@vlmparser.com",
+    author="VisionParse Team",
+    author_email="contact@visionparse.com",
     description="Production-ready tool for analyzing screenshots and extracting UI elements using Vision Language Models",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/vlmparser/vlm-parser",
+    url="https://github.com/visionparse/visionparse",
     project_urls={
-        "Bug Tracker": "https://github.com/vlmparser/vlm-parser/issues",
-        "Documentation": "https://vlmparser.readthedocs.io/",
-        "Source Code": "https://github.com/vlmparser/vlm-parser",
+        "Bug Tracker": "https://github.com/visionparse/visionparse/issues",
+        "Documentation": "https://visionparse.readthedocs.io/",
+        "Source Code": "https://github.com/visionparse/visionparse",
     },
     packages=find_packages(),
     classifiers=[
@@ -62,9 +62,9 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "vlm-parser=cli:main",
-            "vlmparser=cli:main",
-            "vlm-parse=cli:main",
+            "visionparse=cli:main",
+            "vision-parse=cli:main",
+            "vparse=cli:main",
         ],
     },
     include_package_data=True,

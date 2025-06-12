@@ -72,8 +72,8 @@ def get_api_key(config, vlm_type):
     return None
 
 def main():
-    """Main function to run VLM parser"""
-    print("🚀 VLM Parser - Simple Screenshot Analyzer")
+    """Main function to run VisionParse"""
+    print("🚀 VisionParse - Simple Screenshot Analyzer")
     print("📌 Supports any VLM provider and model name")
     print("=" * 50)
     
