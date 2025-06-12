@@ -16,8 +16,8 @@ def read_requirements():
 setup(
     name="visionparse",
     version="1.0.0",
-    author="VisionParse Team",
-    author_email="contact@visionparse.com",
+    author="Maharsh Patel",
+    author_email="maharsh2017@gmail.com",
     description="Production-ready tool for analyzing screenshots and extracting UI elements using Vision Language Models",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
@@ -58,13 +58,6 @@ setup(
             "sphinx>=4.0",
             "sphinx-rtd-theme>=1.0",
             "myst-parser>=0.15",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "visionparse=cli:main",
-            "vision-parse=cli:main",
-            "vparse=cli:main",
         ],
     },
     include_package_data=True,

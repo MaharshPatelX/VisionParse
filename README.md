@@ -35,7 +35,7 @@
 | 🔓 **No Model Restrictions** | Use any model name - future-proof design |
 | 📊 **Structured Output** | JSON with coordinates, types, and descriptions |
 | 🖼️ **Visual Annotations** | Saves annotated images with numbered elements |
-| 🚀 **Production Ready** | CLI tool, Python API, batch processing |
+| 🚀 **Production Ready** | Python library, batch processing |
 | 🏠 **Local Models** | Private analysis with Ollama (free & offline) |
 
 ## 🚀 Quick Start
@@ -53,40 +53,20 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
-### 3. Run Analysis
-```bash
-# Interactive mode (recommended for first time)
-python main.py
+### 3. Use as Library
+```python
+from VisionParse import VisionParse
 
-# Direct CLI
-visionparse screenshot.png --vlm gpt4o
+# Initialize with provider + model
+parser = VisionParse(provider='openai', model='gpt-4o')
+results = parser.analyze('screenshot.png')
 
-# With custom model
-visionparse screenshot.png --vlm openai --model gpt-4.1
+print(f"Found {len(results['elements'])} UI elements")
 ```
 
 ## 📖 Usage Guide
 
-### Command Line Interface
-```bash
-# Basic usage with provider + model
-visionparse image.png --vlm openai --model gpt-4o
-
-# Batch processing
-visionparse *.png --batch --output results/
-
-# Different providers
-visionparse image.png --vlm anthropic --model claude-3-5-sonnet
-visionparse image.png --vlm google --model gemini-2.0-flash-exp
-
-# Local model (free)
-visionparse image.png --vlm ollama --model llava:latest
-
-# JSON output only
-visionparse image.png --json-only --vlm openai --model gpt-4o
-```
-
-### Python API
+### Python Library
 ```python
 from VisionParse import VisionParse
 
@@ -114,14 +94,6 @@ parser = VisionParse(
 )
 ```
 
-### Interactive Mode
-```bash
-python main.py
-# Follow the prompts to:
-# 1. Choose VLM provider
-# 2. Enter image path
-# 3. Get instant analysis
-```
 
 ## 🏠 Local Models (Free & Private)
 
@@ -140,7 +112,8 @@ ollama pull moondream:latest     # 1.7GB - Lightweight
 ollama serve
 
 # 4. Use with VisionParse
-python main.py  # Choose option 4 (Ollama)
+parser = VisionParse(provider='ollama', model='llava:latest')
+results = parser.analyze('screenshot.png')
 ```
 
 **Benefits:** Free, private, offline, no API limits
@@ -216,8 +189,6 @@ VisionParse/
 │   │   ├── vlm_clients.py # Multi-VLM integrations
 │   │   └── __init__.py    # Module exports
 │   └── __init__.py        # Package exports
-├── cli.py                 # Command line interface
-├── main.py               # Interactive mode
 ├── simple_example.py     # Quick start example
 ├── config.json           # Configuration settings
 ├── requirements.txt      # Python dependencies
@@ -240,24 +211,19 @@ VisionParse/
 
 ## 🔍 Output Examples
 
-### Console Output
-```
-🔍 Analyzing screenshot.png...
-✅ YOLO detected 3 UI elements
-🤖 Analyzing with GPT-4o...
+### Python Output
+```python
+results = parser.analyze('screenshot.png')
+print(f"Found {len(results['elements'])} UI elements")
 
-Element 1: Login Button
-  📍 Location: (892, 24) to (956, 44)
-  🎯 Confidence: 0.91
-  📝 Blue authentication button in header
+for element in results['elements']:
+    print(f"- {element['name']}: {element['description']}")
 
-Element 2: Search Field  
-  📍 Location: (300, 100) to (600, 130)
-  🎯 Confidence: 0.87
-  📝 Text input for search queries
-
-💾 Results saved to: screenshot_results.json
-🖼️ Annotated image: screenshot_analyzed.png
+# Output:
+# Found 3 UI elements
+# - Login Button: Blue authentication button in header
+# - Search Field: Text input for search queries
+# - Menu Icon: Navigation menu toggle
 ```
 
 ### JSON Output
@@ -404,7 +370,7 @@ VISIONPARSE_CONFIG = {
 # parser.iou_threshold = 0.5
 
 # Use in your application
-from src import VisionParse
+from VisionParse import VisionParse
 parser = VisionParse(**VISIONPARSE_CONFIG)
 ```
 
@@ -412,9 +378,9 @@ parser = VisionParse(**VISIONPARSE_CONFIG)
 
 ### Batch Processing
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze_batch([
     'screen1.png', 'screen2.png', 'screen3.png'
 ], output_dir='results/')
@@ -426,19 +392,20 @@ print(f"Processed {results['summary']['successful']} images")
 ```python
 # Method 1: During initialization
 parser = VisionParse(
-    vlm_type='gpt4o',
+    provider='openai',
+    model='gpt-4o',
     confidence_threshold=0.3,  # Higher confidence threshold
     iou_threshold=0.5,         # Different IoU threshold
     yolo_model_path='custom_model.pt'
 )
 
 # Method 2: Update after initialization
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 parser.confidence_threshold = 0.3
 parser.iou_threshold = 0.5
 
 # Method 3: Different settings for different images
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Analyze with default settings
 results1 = parser.analyze('screenshot1.png')
