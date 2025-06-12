@@ -1,0 +1,19 @@
+{
+  "vlm_type": "gpt4o",
+  "default_models": {
+    "openai": "gpt-4o",
+    "anthropic": "claude-3-5-sonnet-20241022",
+    "google": "gemini-1.5-flash",
+    "ollama": "llava:latest"
+  },
+  "yolo_model_path": "weights/icon_detect/model.pt",
+  "confidence_threshold": 0.05,
+  "ollama_config": {
+    "base_url": "http://localhost:11434",
+    "timeout": 60
+  },
+  "yolo_config": {
+    "box_threshold": 0.05,
+    "iou_threshold": 0.1
+  }
+}

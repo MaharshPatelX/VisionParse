@@ -1,0 +1,280 @@
+# =====================================
+# VLM Parser - Git Ignore Rules
+# =====================================
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+config_local.json
+**/api_keys.json
+
+# =====================================
+# Python
+# =====================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.coverage
+.pytest_cache/
+
+# =====================================
+# Virtual Environments
+# =====================================
+.venv
+venv/
+ENV/
+env/
+.virtualenv
+virtualenv/
+.conda
+conda-env/
+
+# =====================================
+# IDEs and Editors
+# =====================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =====================================
+# Operating Systems
+# =====================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# =====================================
+# VLM Parser Specific
+# =====================================
+
+# Analysis output files
+*_analyzed.*
+*_annotated.*
+*_results.json
+*_output.json
+analysis_*.json
+annotated_*.png
+annotated_*.jpg
+analyzed_*.png
+analyzed_*.jpg
+
+# Result directories
+results/
+output/
+outputs/
+analysis/
+temp/
+tmp/
+cache/
+
+# Backup files
+*.bak
+*.backup
+*.json.bak
+*.py.bak
+config.json.backup
+
+# Log files
+*.log
+logs/
+debug.log
+error.log
+vlm_parser.log
+
+# =====================================
+# Model Files
+# =====================================
+# YOLO model weights (uncomment if you don't want to track them)
+# weights/*.pt
+# weights/*.pth
+# weights/*.onnx
+# weights/*.trt
+# weights/*.weights
+
+# Downloaded models
+models/
+*.model
+*.bin
+*.safetensors
+
+# Hugging Face cache
+.cache/
+**/transformers_cache/
+**/huggingface/
+
+# =====================================
+# Data Files
+# =====================================
+# Test images (if you don't want to track them)
+test_images/
+sample_screenshots/
+demo_images/
+
+# Large datasets
+data/
+dataset/
+*.csv
+*.xlsx
+*.parquet
+
+# =====================================
+# Documentation
+# =====================================
+# Auto-generated docs
+docs/_build/
+docs/build/
+site/
+
+# =====================================
+# Jupyter Notebooks
+# =====================================
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb
+
+# =====================================
+# Package managers
+# =====================================
+# npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Poetry
+poetry.lock
+
+# pipenv
+Pipfile.lock
+
+# =====================================
+# Security and Sensitive Files
+# =====================================
+# API keys and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+credentials.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# =====================================
+# Performance and Profiling
+# =====================================
+*.prof
+.profile
+*.pstats
+
+# =====================================
+# Miscellaneous
+# =====================================
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
