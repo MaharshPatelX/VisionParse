@@ -64,40 +64,52 @@ def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI
     except Exception as e:
         return f"Error with OpenAI {model}: {str(e)}"
 
-def analyze_with_claude(image, api_key, model="claude-3-5-sonnet-20241022", prompt="Describe this UI element in detail. What is its function?"):
-    """Analyze image using Anthropic Claude via LlamaIndex"""
+def analyze_with_claude(image, api_key, model="claude-sonnet-4-0", prompt="Describe this UI element in detail. What is its function?"):
+    """Analyze image using Anthropic Claude via LlamaIndex with Claude 4 workaround"""
     try:
-        from llama_index.multi_modal_llms.anthropic import AnthropicMultiModal
-        from llama_index.core.schema import ImageDocument
-        import io
+        from llama_index.llms.anthropic import Anthropic
+        from llama_index.core.llms import ChatMessage, TextBlock, ImageBlock
+        import tempfile
+        import os
         
-        # Initialize Anthropic multimodal LLM
-        llm = AnthropicMultiModal(
+        # Initialize Anthropic LLM with Claude 4 support
+        llm = Anthropic(
             model=model,
             api_key=api_key,
             temperature=0.1,
             max_tokens=300
         )
         
-        # Convert PIL image to bytes for ImageDocument
+        # Handle image input - save to temporary file if PIL Image
         if isinstance(image, str):
-            image = Image.open(image)
+            # Already a file path
+            image_path = image
+        else:
+            # PIL Image - save to temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            image.save(temp_file.name, format='PNG')
+            image_path = temp_file.name
         
-        # Convert PIL image to bytes
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_bytes = img_byte_arr.getvalue()
-        
-        # Create image document with bytes
-        image_doc = ImageDocument(image=img_bytes)
-        
-        # Generate response
-        response = llm.complete(
-            prompt=prompt,
-            image_documents=[image_doc]
-        )
-        
-        return response.text.strip()
+        try:
+            # Create message with image and text using new Claude 4 compatible format
+            messages = [
+                ChatMessage(
+                    role="user",
+                    blocks=[
+                        ImageBlock(path=image_path),
+                        TextBlock(text=prompt),
+                    ],
+                )
+            ]
+            
+            # Get response
+            response = llm.chat(messages)
+            return response.message.content.strip()
+            
+        finally:
+            # Clean up temporary file if we created one
+            if not isinstance(image, str) and os.path.exists(image_path):
+                os.unlink(image_path)
     
     except Exception as e:
         return f"Error with Claude {model}: {str(e)}"
