@@ -42,8 +42,8 @@
 
 ### 1. Installation
 ```bash
-git clone <repository>
-cd visionparse
+git clone https://github.com/MaharshPatelX/VisionParse.git
+cd VisionParse
 pip install -r requirements.txt
 ```
 
@@ -198,7 +198,7 @@ VLM_PROVIDER=gpt4o
 ## 📁 Project Structure
 
 ```
-visionparse/
+VisionParse/
 ├── src/                    # Core modules
 │   ├── vlm_parser.py      # Main API class
 │   ├── yolo_detector.py   # YOLO detection engine
@@ -272,22 +272,35 @@ VisionParse can be easily integrated into your Python applications as a library.
 ### Installation as Library
 ```bash
 # Install from local directory
-cd visionparse
+cd VisionParse
 pip install -e .
 
 # Or install normally
 pip install .
 
-# Future: Install from GitHub
-pip install git+https://github.com/yourusername/visionparse.git
+# Install directly from GitHub
+pip install git+https://github.com/MaharshPatelX/VisionParse.git
 ```
 
 ### Basic Library Usage
 ```python
 from src import VisionParse
 
-# Simple usage
+# Simple usage with default settings
 parser = VisionParse(vlm_type='gpt4o')
+results = parser.analyze('screenshot.png')
+
+# Custom YOLO thresholds
+parser = VisionParse(
+    vlm_type='gpt4o',
+    confidence_threshold=0.3,  # Default: 0.05
+    iou_threshold=0.5          # Default: 0.1
+)
+results = parser.analyze('screenshot.png')
+
+# Change thresholds dynamically
+parser.confidence_threshold = 0.1  # More sensitive detection
+parser.iou_threshold = 0.3         # Less overlap filtering
 results = parser.analyze('screenshot.png')
 
 # Access results
@@ -364,6 +377,10 @@ VISIONPARSE_CONFIG = {
     'iou_threshold': float(os.getenv('IOU_THRESHOLD', '0.1'))
 }
 
+# You can also override thresholds dynamically
+# parser.confidence_threshold = 0.3
+# parser.iou_threshold = 0.5
+
 # Use in your application
 from src import VisionParse
 parser = VisionParse(**VISIONPARSE_CONFIG)
@@ -385,12 +402,34 @@ print(f"Processed {results['summary']['successful']} images")
 
 ### Custom YOLO Settings
 ```python
+# Method 1: During initialization
 parser = VisionParse(
     vlm_type='gpt4o',
-    confidence_threshold=0.3,  # Higher threshold
-    iou_threshold=0.5,         # Different IoU
+    confidence_threshold=0.3,  # Higher confidence threshold
+    iou_threshold=0.5,         # Different IoU threshold
     yolo_model_path='custom_model.pt'
 )
+
+# Method 2: Update after initialization
+parser = VisionParse(vlm_type='gpt4o')
+parser.confidence_threshold = 0.3
+parser.iou_threshold = 0.5
+
+# Method 3: Different settings for different images
+parser = VisionParse(vlm_type='gpt4o')
+
+# Analyze with default settings
+results1 = parser.analyze('screenshot1.png')
+
+# Change settings for more sensitive detection
+parser.confidence_threshold = 0.1  # Lower = more detections
+parser.iou_threshold = 0.3         # Lower = less overlap filtering
+results2 = parser.analyze('screenshot2.png')
+
+# Change settings for stricter detection
+parser.confidence_threshold = 0.7  # Higher = fewer, confident detections
+parser.iou_threshold = 0.8         # Higher = more overlap allowed
+results3 = parser.analyze('screenshot3.png')
 ```
 
 ### Export Results
@@ -416,8 +455,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙋‍♂️ Support
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/visionparse/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/visionparse/discussions)
+- **Issues:** [GitHub Issues](https://github.com/MaharshPatelX/VisionParse/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/MaharshPatelX/VisionParse/discussions)
 
 ---
 
