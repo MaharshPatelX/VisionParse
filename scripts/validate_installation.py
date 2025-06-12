@@ -86,7 +86,7 @@ class VisionParseValidator:
         print("🧩 Checking VisionParse import...")
         
         try:
-            from src import VisionParse, VisionParseError
+            from VisionParse import VisionParse, VisionParseError
             print("   ✅ VisionParse imports successfully")
             self.success_count += 1
             return True
@@ -220,7 +220,7 @@ class VisionParseValidator:
         print("🧪 Testing VisionParse initialization...")
         
         try:
-            from src import VisionParse, VisionParseError
+            from VisionParse import VisionParse, VisionParseError
             
             # Test with Ollama (doesn't require API key)
             try:

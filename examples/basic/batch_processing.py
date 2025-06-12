@@ -15,7 +15,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 
 def batch_processing_example():
@@ -27,10 +27,11 @@ def batch_processing_example():
     try:
         # Initialize VisionParse
         parser = VisionParse(
-            vlm_type='gpt4o',
+            provider='openai',
+            model='gpt-4o',
             verbose=True  # Enable verbose output for batch processing
         )
-        print(f"✅ VisionParse initialized with {parser.vlm_type}")
+        print(f"✅ VisionParse initialized with {parser.provider}")
         
         # Find image files to process
         image_patterns = [
@@ -80,7 +81,7 @@ def batch_processing_example():
         print(f"  Total images: {summary['total']}")
         print(f"  ✅ Successful: {summary['successful']}")
         print(f"  ❌ Failed: {summary['failed']}")
-        print(f"  🤖 VLM used: {batch_results['vlm_type']}")
+        print(f"  🤖 Provider used: {batch_results.get('provider', 'N/A')}")
         print(f"  🔧 Model: {batch_results['model']}")
         
         # Analyze results in detail
@@ -153,7 +154,7 @@ def process_directory(directory_path):
         return
     
     try:
-        parser = VisionParse(vlm_type='gpt4o')
+        parser = VisionParse(provider='openai', model='gpt-4o')
         
         # Find images in directory
         image_extensions = ['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.tiff']
@@ -192,7 +193,7 @@ def selective_batch_processing():
     print("=" * 40)
     
     try:
-        parser = VisionParse(vlm_type='gpt4o')
+        parser = VisionParse(provider='openai', model='gpt-4o')
         
         # Find all images
         all_images = glob.glob("**/*.png", recursive=True) + glob.glob("**/*.jpg", recursive=True)

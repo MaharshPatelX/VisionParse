@@ -87,21 +87,30 @@ visionparse image.png --json-only
 
 ### Python API
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
-# Initialize parser
-parser = VisionParse(vlm_type='gpt4o')
+# Initialize parser with provider + model
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Analyze single image
 results = parser.analyze('screenshot.png')
 print(f"Found {len(results['elements'])} UI elements")
 
+# Different providers
+parser = VisionParse(provider='anthropic', model='claude-3-5-sonnet')
+parser = VisionParse(provider='google', model='gemini-2.0-flash-exp')
+parser = VisionParse(provider='ollama', model='llava:latest')
+
 # Batch processing
 results = parser.analyze_batch(['img1.png', 'img2.png'])
 
-# Custom model
-parser = VisionParse(vlm_type='openai', model='gpt-4.1')
-results = parser.analyze('screenshot.png')
+# Custom thresholds
+parser = VisionParse(
+    provider='openai', 
+    model='gpt-4o',
+    confidence_threshold=0.3,
+    iou_threshold=0.5
+)
 ```
 
 ### Interactive Mode

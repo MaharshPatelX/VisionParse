@@ -2,8 +2,8 @@
 
 import os
 import json
-from src.yolo_detector import detect_ui_elements, draw_boxes_on_image, crop_image_regions
-from src.vlm_clients import batch_analyze_regions
+from VisionParse.src.yolo_detector import detect_ui_elements, draw_boxes_on_image, crop_image_regions
+from VisionParse.src.vlm_clients import batch_analyze_regions
 
 def load_config():
     """Load configuration from config.json"""

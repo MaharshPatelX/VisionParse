@@ -14,7 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 
 def threshold_comparison_example():
@@ -64,7 +64,7 @@ def threshold_comparison_example():
         print(f"📊 Comparing {len(threshold_configs)} threshold configurations...\n")
         
         # Initialize parser
-        parser = VisionParse(vlm_type='gpt4o')
+        parser = VisionParse(provider='openai', model='gpt-4o')
         
         results_comparison = []
         
@@ -176,7 +176,7 @@ def adaptive_threshold_example():
         return
     
     try:
-        parser = VisionParse(vlm_type='gpt4o')
+        parser = VisionParse(provider='openai', model='gpt-4o')
         
         def find_optimal_thresholds(image_path, target_elements=10):
             """Find thresholds that produce close to target number of elements"""
@@ -299,7 +299,7 @@ def image_type_specific_thresholds():
     print("📝 Example usage:")
     print("```python")
     print("# For mobile app analysis")
-    print("parser = VisionParse(vlm_type='gpt4o')")
+    print("parser = VisionParse(provider='openai', model='gpt-4o')")
     print("parser.confidence_threshold = 0.15")
     print("parser.iou_threshold = 0.4")
     print("results = parser.analyze('mobile_screenshot.png')")

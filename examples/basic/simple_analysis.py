@@ -14,7 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 
 def simple_analysis_example():
@@ -25,8 +25,8 @@ def simple_analysis_example():
     
     try:
         # Initialize VisionParse with default settings
-        parser = VisionParse(vlm_type='gpt4o')
-        print(f"✅ VisionParse initialized with {parser.vlm_type}")
+        parser = VisionParse(provider='openai', model='gpt-4o')
+        print(f"✅ VisionParse initialized with {parser.provider}")
         
         # Sample image path (you can change this)
         image_path = "sample_screenshot.png"
@@ -91,7 +91,7 @@ def quick_test():
     
     try:
         # Test initialization only
-        parser = VisionParse(vlm_type='gpt4o')
+        parser = VisionParse(provider='openai', model='gpt-4o')
         print("✅ VisionParse can be initialized")
         
         # Check API key

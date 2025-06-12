@@ -69,7 +69,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "vlm_parser": [
+        "VisionParse": [
             "config.json",
             "*.md",
         ],

@@ -31,27 +31,30 @@ class VisionParse:
     
     def __init__(
         self,
-        config_path: Optional[str] = None,
-        vlm_type: Optional[str] = None,
+        provider: Optional[str] = None,
         model: Optional[str] = None,
         api_key: Optional[str] = None,
         confidence_threshold: float = 0.05,
         iou_threshold: float = 0.1,
         yolo_model_path: Optional[str] = None,
-        verbose: bool = False
+        config_path: Optional[str] = None,
+        verbose: bool = False,
+        # Backward compatibility
+        vlm_type: Optional[str] = None
     ):
         """
         Initialize VisionParse
         
         Args:
-            config_path: Path to configuration file
-            vlm_type: VLM provider (supports any provider name)
-            model: Specific model name (supports any model name)
+            provider: VLM provider (openai, anthropic, google, ollama)
+            model: Specific model name (gpt-4o, claude-3-5-sonnet, gemini-2.0-flash-exp, etc.)
             api_key: API key for VLM provider
-            confidence_threshold: YOLO confidence threshold
-            iou_threshold: YOLO IoU threshold
+            confidence_threshold: YOLO confidence threshold (0.0-1.0)
+            iou_threshold: YOLO IoU threshold (0.0-1.0)
             yolo_model_path: Path to custom YOLO model
+            config_path: Path to configuration file
             verbose: Enable verbose logging
+            vlm_type: Deprecated, use provider instead
         """
         self.setup_logging(verbose)
         self.logger = logging.getLogger(__name__)
@@ -59,20 +62,23 @@ class VisionParse:
         # Load configuration
         self.config = self._load_config(config_path)
         
-        # Override config with provided parameters
-        self.vlm_type = vlm_type or self._get_vlm_type()
+        # Handle provider/vlm_type (backward compatibility)
+        self.provider = provider or vlm_type or self._get_provider()
+        self.vlm_type = self.provider  # Keep for backward compatibility
+        
+        # Set parameters
         self.api_key = api_key or self._get_api_key()
         self.confidence_threshold = confidence_threshold
         self.iou_threshold = iou_threshold
         self.yolo_model_path = yolo_model_path or self.config.get('yolo_model_path', 'weights/icon_detect/model.pt')
         
-        # Set model after vlm_type is set
+        # Set model after provider is set
         self.model = model or self._get_default_model()
         
         # Validate configuration
         self._validate_config()
         
-        self.logger.info(f"VisionParse initialized with {self.vlm_type.upper()}")
+        self.logger.info(f"VisionParse initialized with {self.provider.upper()}")
         if self.model:
             self.logger.info(f"Using model: {self.model}")
     
@@ -98,11 +104,12 @@ class VisionParse:
         
         # Default configuration
         return {
-            'vlm_type': 'gpt4o',
+            'provider': 'openai',
+            'vlm_type': 'openai',  # Backward compatibility
             'default_models': {
                 'openai': 'gpt-4o',
-                'anthropic': 'claude-3-5-sonnet-20241022',
-                'google': 'gemini-1.5-flash',
+                'anthropic': 'claude-3-5-sonnet',
+                'google': 'gemini-2.0-flash-exp',
                 'ollama': 'llava:latest'
             },
             'yolo_model_path': 'weights/icon_detect/model.pt',
@@ -117,42 +124,39 @@ class VisionParse:
             }
         }
     
-    def _get_vlm_type(self) -> str:
-        """Get VLM type with interactive prompt if needed"""
-        if hasattr(self, '_prompted_vlm'):
-            return getattr(self, '_prompted_vlm')
-        
+    def _get_provider(self) -> str:
+        """Get VLM provider with fallback logic"""
         # Check for environment variables
-        for env_var in ['VLM_PROVIDER', 'VLM_TYPE']:
+        for env_var in ['VLM_PROVIDER', 'VLM_TYPE', 'PROVIDER']:
             if os.getenv(env_var):
                 return os.getenv(env_var).lower()
         
         # Use config default
-        return self.config.get('vlm_type', 'gpt4o')
+        return self.config.get('provider', self.config.get('vlm_type', 'openai'))
     
     def _get_api_key(self) -> Optional[str]:
         """Get API key from various sources - supports any VLM type"""
         # 1. Provided directly
-        if self.api_key:
+        if hasattr(self, 'api_key') and self.api_key:
             return self.api_key
         
         # 2. Environment variables - check common patterns
-        vlm_lower = self.vlm_type.lower()
+        provider_lower = self.provider.lower()
         
         # Try standard environment variable patterns
         env_var_candidates = [
-            f"{self.vlm_type.upper()}_API_KEY",
-            f"{self.vlm_type.upper()}_KEY",
+            f"{self.provider.upper()}_API_KEY",
+            f"{self.provider.upper()}_KEY",
         ]
         
         # Add pattern-based candidates
-        if any(pattern in vlm_lower for pattern in ['gpt', 'openai']):
+        if any(pattern in provider_lower for pattern in ['gpt', 'openai']):
             env_var_candidates.extend(['OPENAI_API_KEY', 'OPENAI_KEY'])
-        elif any(pattern in vlm_lower for pattern in ['claude', 'anthropic']):
+        elif any(pattern in provider_lower for pattern in ['claude', 'anthropic']):
             env_var_candidates.extend(['ANTHROPIC_API_KEY', 'ANTHROPIC_KEY'])
-        elif any(pattern in vlm_lower for pattern in ['gemini', 'google']):
+        elif any(pattern in provider_lower for pattern in ['gemini', 'google']):
             env_var_candidates.extend(['GOOGLE_API_KEY', 'GOOGLE_KEY'])
-        elif any(pattern in vlm_lower for pattern in ['ollama', 'local']):
+        elif any(pattern in provider_lower for pattern in ['ollama', 'local']):
             return None  # No API key needed for local models
         
         # Check environment variables
@@ -164,15 +168,15 @@ class VisionParse:
         api_keys = self.config.get('api_keys', {})
         
         # Try direct key lookup first
-        if self.vlm_type in api_keys:
-            return api_keys[self.vlm_type]
+        if self.provider in api_keys:
+            return api_keys[self.provider]
         
         # Pattern-based key mapping
-        if any(pattern in vlm_lower for pattern in ['gpt', 'openai']):
+        if any(pattern in provider_lower for pattern in ['gpt', 'openai']):
             return api_keys.get('openai')
-        elif any(pattern in vlm_lower for pattern in ['claude', 'anthropic']):
+        elif any(pattern in provider_lower for pattern in ['claude', 'anthropic']):
             return api_keys.get('anthropic')
-        elif any(pattern in vlm_lower for pattern in ['gemini', 'google']):
+        elif any(pattern in provider_lower for pattern in ['gemini', 'google']):
             return api_keys.get('google')
         
         return None
@@ -184,8 +188,8 @@ class VisionParse:
             raise VisionParseError(f"YOLO model not found: {self.yolo_model_path}")
         
         # Check API key for non-local models
-        if not any(keyword in self.vlm_type.lower() for keyword in ['ollama', 'local']) and not self.api_key:
-            raise VisionParseError(f"API key required for {self.vlm_type.upper()}")
+        if not any(keyword in self.provider.lower() for keyword in ['ollama', 'local']) and not self.api_key:
+            raise VisionParseError(f"API key required for {self.provider.upper()}")
         
         # Validate thresholds
         if not 0 <= self.confidence_threshold <= 1:
@@ -195,25 +199,25 @@ class VisionParse:
             raise VisionParseError("IoU threshold must be between 0 and 1")
     
     def _get_default_model(self) -> str:
-        """Get default model for the current VLM type"""
-        # Allow any model name - provide sensible defaults based on VLM type patterns
+        """Get default model for the current provider"""
+        # Allow any model name - provide sensible defaults based on provider patterns
         default_models = self.config.get('default_models', {})
         
         # Check for exact matches first
-        if self.vlm_type in default_models:
-            return default_models[self.vlm_type]
+        if self.provider in default_models:
+            return default_models[self.provider]
         
-        # Pattern-based fallbacks for common VLM types
-        if 'gpt' in self.vlm_type.lower() or 'openai' in self.vlm_type.lower():
+        # Pattern-based fallbacks for common providers
+        if 'gpt' in self.provider.lower() or 'openai' in self.provider.lower():
             return default_models.get('openai', 'gpt-4o')
-        elif 'claude' in self.vlm_type.lower() or 'anthropic' in self.vlm_type.lower():
-            return default_models.get('anthropic', 'claude-3-5-sonnet-20241022')
-        elif 'gemini' in self.vlm_type.lower() or 'google' in self.vlm_type.lower():
-            return default_models.get('google', 'gemini-1.5-flash')
-        elif 'ollama' in self.vlm_type.lower():
+        elif 'claude' in self.provider.lower() or 'anthropic' in self.provider.lower():
+            return default_models.get('anthropic', 'claude-3-5-sonnet')
+        elif 'gemini' in self.provider.lower() or 'google' in self.provider.lower():
+            return default_models.get('google', 'gemini-2.0-flash-exp')
+        elif 'ollama' in self.provider.lower():
             return default_models.get('ollama', 'llava:latest')
         else:
-            # Default fallback for any unknown VLM type
+            # Default fallback for any unknown provider
             return 'gpt-4o'
     
     def analyze(
@@ -266,10 +270,10 @@ class VisionParse:
             cropped_regions = crop_image_regions(str(image_path), detected_boxes)
             
             # Step 3: VLM Analysis
-            self.logger.info(f"Analyzing with {self.vlm_type.upper()}...")
+            self.logger.info(f"Analyzing with {self.provider.upper()}...")
             results = batch_analyze_regions(
                 cropped_regions=cropped_regions,
-                vlm_type=self.vlm_type,
+                vlm_type=self.provider,  # Keep vlm_type for backward compatibility
                 api_key=self.api_key,
                 model=self.model
             )

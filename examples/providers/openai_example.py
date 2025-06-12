@@ -14,7 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 
 def openai_models_showcase():
@@ -81,7 +81,7 @@ def openai_models_showcase():
         try:
             # Initialize parser with specific model
             parser = VisionParse(
-                vlm_type='openai',
+                provider='openai',
                 model=model_info['model_id'],
                 api_key=api_key
             )
@@ -175,7 +175,7 @@ def openai_advanced_features():
     try:
         # Use latest GPT-4.1 model
         parser = VisionParse(
-            vlm_type='openai',
+            provider='openai',
             model='gpt-4.1',
             verbose=True
         )
@@ -286,7 +286,7 @@ def error_handling_example():
         # Test with invalid model
         print("🧪 Testing with invalid model...")
         parser = VisionParse(
-            vlm_type='openai',
+            provider='openai',
             model='invalid-model-name'
         )
         
@@ -302,7 +302,7 @@ def error_handling_example():
         # Test with invalid API key
         print("\n🧪 Testing with invalid API key...")
         parser = VisionParse(
-            vlm_type='openai',
+            provider='openai',
             model='gpt-4o',
             api_key='invalid-key'
         )

@@ -17,7 +17,7 @@ import sys
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 
 class TestVisionParseInitialization(unittest.TestCase):

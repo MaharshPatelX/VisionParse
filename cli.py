@@ -12,7 +12,7 @@ from pathlib import Path
 import logging
 from typing import Optional, Dict, List, Any
 
-from src.vlm_parser import VisionParse
+from VisionParse import VisionParse
 
 def setup_logging(verbose: bool = False):
     """Setup logging configuration"""
@@ -252,7 +252,7 @@ def main():
         
         parser_instance = VisionParse(
             config_path=str(config_path) if config_path else None,
-            vlm_type=args.vlm,
+            provider=args.vlm,
             model=args.model,
             api_key=args.api_key,
             confidence_threshold=args.confidence,
