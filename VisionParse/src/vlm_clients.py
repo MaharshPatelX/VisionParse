@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Any
 # Disable LlamaIndex HTTP request logging
 logging.getLogger("llama_index.core.base.llms.base").setLevel(logging.WARNING)
 logging.getLogger("llama_index.llms.google_genai").setLevel(logging.WARNING)
+logging.getLogger("llama_index").setLevel(logging.WARNING)  # Suppress all LlamaIndex logs
 logging.getLogger("openai").setLevel(logging.WARNING)
 logging.getLogger("anthropic").setLevel(logging.WARNING)
 logging.getLogger("google.generativeai").setLevel(logging.WARNING)
