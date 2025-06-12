@@ -19,10 +19,10 @@ def encode_image_to_base64(image):
 def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using OpenAI models via LlamaIndex"""
     try:
-        from llama_index.llms.openai import OpenAI
-        from llama_index.core.schema import ImageDocument
-        from llama_index.core.multi_modal_llms import MultiModalLLM
         from llama_index.multi_modal_llms.openai import OpenAIMultiModal
+        from llama_index.core.schema import ImageDocument
+        import io
+        import base64
         
         # Initialize OpenAI multimodal LLM
         llm = OpenAIMultiModal(
@@ -32,12 +32,17 @@ def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI
             max_tokens=300
         )
         
-        # Convert PIL image to ImageDocument
+        # Convert PIL image to bytes for ImageDocument
         if isinstance(image, str):
             image = Image.open(image)
         
-        # Create image document
-        image_doc = ImageDocument(image=image)
+        # Convert PIL image to bytes
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_bytes = img_byte_arr.getvalue()
+        
+        # Create image document with bytes
+        image_doc = ImageDocument(image=img_bytes)
         
         # Generate response
         response = llm.complete(
@@ -53,9 +58,9 @@ def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI
 def analyze_with_claude(image, api_key, model="claude-3-5-sonnet-20241022", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Anthropic Claude via LlamaIndex"""
     try:
-        from llama_index.llms.anthropic import Anthropic
         from llama_index.multi_modal_llms.anthropic import AnthropicMultiModal
         from llama_index.core.schema import ImageDocument
+        import io
         
         # Initialize Anthropic multimodal LLM
         llm = AnthropicMultiModal(
@@ -65,12 +70,17 @@ def analyze_with_claude(image, api_key, model="claude-3-5-sonnet-20241022", prom
             max_tokens=300
         )
         
-        # Convert PIL image to ImageDocument
+        # Convert PIL image to bytes for ImageDocument
         if isinstance(image, str):
             image = Image.open(image)
         
-        # Create image document
-        image_doc = ImageDocument(image=image)
+        # Convert PIL image to bytes
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_bytes = img_byte_arr.getvalue()
+        
+        # Create image document with bytes
+        image_doc = ImageDocument(image=img_bytes)
         
         # Generate response
         response = llm.complete(
@@ -86,9 +96,9 @@ def analyze_with_claude(image, api_key, model="claude-3-5-sonnet-20241022", prom
 def analyze_with_gemini(image, api_key, model="gemini-2.0-flash-exp", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Google Gemini via LlamaIndex"""
     try:
-        from llama_index.llms.gemini import Gemini
         from llama_index.multi_modal_llms.gemini import GeminiMultiModal
         from llama_index.core.schema import ImageDocument
+        import io
         
         # Initialize Gemini multimodal LLM
         llm = GeminiMultiModal(
@@ -98,12 +108,17 @@ def analyze_with_gemini(image, api_key, model="gemini-2.0-flash-exp", prompt="De
             max_tokens=300
         )
         
-        # Convert PIL image to ImageDocument
+        # Convert PIL image to bytes for ImageDocument
         if isinstance(image, str):
             image = Image.open(image)
         
-        # Create image document
-        image_doc = ImageDocument(image=image)
+        # Convert PIL image to bytes
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_bytes = img_byte_arr.getvalue()
+        
+        # Create image document with bytes
+        image_doc = ImageDocument(image=img_bytes)
         
         # Generate response
         response = llm.complete(
@@ -119,9 +134,9 @@ def analyze_with_gemini(image, api_key, model="gemini-2.0-flash-exp", prompt="De
 def analyze_with_ollama(image, model="llava:latest", base_url="http://localhost:11434", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Ollama local models via LlamaIndex"""
     try:
-        from llama_index.llms.ollama import Ollama
         from llama_index.multi_modal_llms.ollama import OllamaMultiModal
         from llama_index.core.schema import ImageDocument
+        import io
         
         # Initialize Ollama multimodal LLM
         llm = OllamaMultiModal(
@@ -132,12 +147,17 @@ def analyze_with_ollama(image, model="llava:latest", base_url="http://localhost:
             request_timeout=60.0
         )
         
-        # Convert PIL image to ImageDocument
+        # Convert PIL image to bytes for ImageDocument
         if isinstance(image, str):
             image = Image.open(image)
         
-        # Create image document
-        image_doc = ImageDocument(image=image)
+        # Convert PIL image to bytes
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_bytes = img_byte_arr.getvalue()
+        
+        # Create image document with bytes
+        image_doc = ImageDocument(image=img_bytes)
         
         # Generate response
         response = llm.complete(

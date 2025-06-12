@@ -7,6 +7,7 @@ opencv-python>=4.8.0
 numpy>=1.24.0
 
 # LlamaIndex LLM clients (unified interface)
+llama-index>=0.11.0
 llama-index-core>=0.11.0
 llama-index-llms-openai>=0.2.0
 llama-index-llms-anthropic>=0.3.0
