@@ -1,9 +1,10 @@
 # VisionParse
 
-> **AI-powered screenshot analysis tool** that combines YOLO object detection with Vision Language Models to extract UI elements with structured data.
+> **AI-powered screenshot analysis tool** that combines YOLO object detection with Vision Language Models to extract UI elements with structured data. Now powered by **LlamaIndex** for unified multimodal AI integration.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![LlamaIndex](https://img.shields.io/badge/Powered%20by-LlamaIndex-orange.svg)](https://www.llamaindex.ai/)
 
 ## 🌟 What It Does
 
@@ -31,12 +32,21 @@
 | Feature | Description |
 |---------|-------------|
 | 🎯 **YOLO Detection** | Fast UI element detection with precise bounding boxes |
-| 🤖 **Multi-VLM Support** | GPT-4o, Claude, Gemini, Ollama (local models) |
+| 🤖 **LlamaIndex Integration** | Unified interface for GPT-4o, Claude, Gemini, Ollama |
 | 🔓 **No Model Restrictions** | Use any model name - future-proof design |
 | 📊 **Structured Output** | JSON with coordinates, types, and descriptions |
 | 🖼️ **Visual Annotations** | Saves annotated images with numbered elements |
 | 🚀 **Production Ready** | Python library, batch processing |
 | 🏠 **Local Models** | Private analysis with Ollama (free & offline) |
+
+## 🔥 What's New: LlamaIndex Integration
+
+VisionParse now uses **LlamaIndex** for all VLM interactions, providing:
+
+- **Unified API**: Single interface for all providers instead of multiple libraries
+- **Better Error Handling**: Built-in retry logic and timeout management
+- **Cleaner Code**: Simplified provider implementations
+- **Future-Proof**: Easy to add new models as LlamaIndex supports them
 
 ## 🚀 Quick Start
 
@@ -48,9 +58,12 @@ pip install -r requirements.txt
 ```
 
 ### 2. Configure API Keys
+Create a `.env` file in the project root:
 ```bash
-cp .env.example .env
-# Edit .env with your API keys
+# API Keys
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+GOOGLE_API_KEY=your-google-api-key
 ```
 
 ### 3. Use as Library
@@ -62,6 +75,11 @@ parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze('screenshot.png')
 
 print(f"Found {len(results['elements'])} UI elements")
+```
+
+### 4. Test the Setup
+```bash
+python test.py
 ```
 
 ## 📖 Usage Guide
@@ -93,7 +111,6 @@ parser = VisionParse(
     iou_threshold=0.5
 )
 ```
-
 
 ## 🏠 Local Models (Free & Private)
 
@@ -127,8 +144,8 @@ OPENAI_API_KEY=sk-your-openai-key
 ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 GOOGLE_API_KEY=your-google-api-key
 
-# Default settings
-VLM_PROVIDER=gpt4o
+# Default settings (optional)
+VLM_PROVIDER=openai
 ```
 
 ### Config File (config.json)
@@ -156,21 +173,16 @@ VLM_PROVIDER=gpt4o
 # Latest OpenAI models (2025)
 --model gpt-4.1
 --model gpt-4.1-mini
---model gpt-4.1-nano
 --model gpt-4o
 
 # Latest Anthropic Claude models (2025)
 --model claude-4-opus
 --model claude-4-sonnet
---model claude-3.7-sonnet
 --model claude-3.5-sonnet
---model claude-3.5-haiku
 
 # Latest Google Gemini models (2025)
 --model gemini-2.5-pro
---model gemini-2.5-flash
 --model gemini-2.0-flash
---model gemini-2.0-pro
 
 # Local Ollama models
 --model llava:latest
@@ -186,28 +198,47 @@ VisionParse/
 │   ├── src/               # Core modules
 │   │   ├── vlm_parser.py  # Main API class
 │   │   ├── yolo_detector.py # YOLO detection engine
-│   │   ├── vlm_clients.py # Multi-VLM integrations
+│   │   ├── vlm_clients.py # LlamaIndex VLM integrations
 │   │   └── __init__.py    # Module exports
 │   └── __init__.py        # Package exports
-├── simple_example.py     # Quick start example
+├── test.py               # Test script for LlamaIndex integration
 ├── config.json           # Configuration settings
-├── requirements.txt      # Python dependencies
+├── requirements.txt      # Python dependencies (now with LlamaIndex)
 ├── .env                  # API keys (create from .env.example)
-├── docs/                 # Documentation
-├── examples/             # Usage examples
-├── tests/                # Unit tests
-├── scripts/              # Utility scripts
-└── weights/             # YOLO model weights
-    └── icon_detect/
-        └── model.pt     # Pre-trained YOLO model
+├── weights/             # YOLO model weights
+│   └── icon_detect/
+│       └── model.pt     # Pre-trained YOLO model
+└── README.md            # This file
 ```
 
 ## 📋 Requirements
 
 - **Python:** 3.8 or higher
+- **LlamaIndex:** Core and provider packages
 - **YOLO Model:** Place model weights in `weights/icon_detect/model.pt`
 - **API Keys:** At least one VLM provider API key (or use Ollama locally)
 - **Memory:** 4GB RAM minimum (8GB recommended for local models)
+
+## 🔍 Dependencies
+
+### Core ML Dependencies
+```
+torch>=2.0.0
+torchvision>=0.15.0
+ultralytics>=8.0.0
+Pillow>=9.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+```
+
+### LlamaIndex LLM Clients (Unified Interface)
+```
+llama-index-core>=0.11.0
+llama-index-llms-openai>=0.2.0
+llama-index-llms-anthropic>=0.3.0
+llama-index-llms-gemini>=0.2.0
+llama-index-llms-ollama>=0.3.0
+```
 
 ## 🔍 Output Examples
 
@@ -242,14 +273,12 @@ for element in results['elements']:
     }
   ],
   "yolo_detections": 3,
-  "vlm_type": "gpt4o",
+  "vlm_type": "openai",
   "model": "gpt-4o"
 }
 ```
 
 ## 📚 Library Usage
-
-VisionParse can be easily integrated into your Python applications as a library.
 
 ### Installation as Library
 ```bash
@@ -264,39 +293,6 @@ pip install .
 pip install git+https://github.com/MaharshPatelX/VisionParse.git
 ```
 
-### Basic Library Usage
-```python
-from VisionParse import VisionParse
-
-# Simple usage with provider + model
-parser = VisionParse(provider='openai', model='gpt-4o')
-results = parser.analyze('screenshot.png')
-
-# Different providers
-parser = VisionParse(provider='anthropic', model='claude-3-5-sonnet')
-parser = VisionParse(provider='google', model='gemini-2.0-flash-exp')
-parser = VisionParse(provider='ollama', model='llava:latest')
-
-# Custom YOLO thresholds
-parser = VisionParse(
-    provider='openai',
-    model='gpt-4o',
-    confidence_threshold=0.3,  # Default: 0.05
-    iou_threshold=0.5          # Default: 0.1
-)
-results = parser.analyze('screenshot.png')
-
-# Change thresholds dynamically
-parser.confidence_threshold = 0.1  # More sensitive detection
-parser.iou_threshold = 0.3         # Less overlap filtering
-results = parser.analyze('screenshot.png')
-
-# Access results
-print(f"Found {len(results['elements'])} UI elements")
-for element in results['elements']:
-    print(f"- {element['name']}: {element['description']}")
-```
-
 ### Integration in Your Application
 ```python
 import os
@@ -304,13 +300,9 @@ from VisionParse import VisionParse, VisionParseError
 
 class ScreenshotAnalyzer:
     def __init__(self, provider='openai', model='gpt-4o'):
-        # Load API key from environment
-        api_key = os.getenv('OPENAI_API_KEY')
-        
         self.parser = VisionParse(
             provider=provider,
             model=model,
-            api_key=api_key,
             verbose=False
         )
     
@@ -330,56 +322,16 @@ class ScreenshotAnalyzer:
                 
         except VisionParseError as e:
             return {'error': str(e)}
-    
-    def get_clickable_elements(self, image_path):
-        """Get only clickable UI elements"""
-        results = self.analyze_ui(image_path)
-        
-        if 'elements' in results:
-            clickable_types = ['Button', 'Link', 'Icon', 'Menu']
-            return [
-                el for el in results['elements'] 
-                if el['type'] in clickable_types
-            ]
-        
-        return []
 
-# Usage in your app
+# Usage
 analyzer = ScreenshotAnalyzer(provider='anthropic', model='claude-3-5-sonnet')
 ui_elements = analyzer.analyze_ui('app_screenshot.png')
-clickable_elements = analyzer.get_clickable_elements('app_screenshot.png')
-```
-
-### Environment Configuration
-```python
-# config.py
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-VISIONPARSE_CONFIG = {
-    'vlm_type': os.getenv('VLM_PROVIDER', 'gpt4o'),
-    'api_key': os.getenv('OPENAI_API_KEY'),
-    'confidence_threshold': float(os.getenv('CONFIDENCE_THRESHOLD', '0.05')),
-    'iou_threshold': float(os.getenv('IOU_THRESHOLD', '0.1'))
-}
-
-# You can also override thresholds dynamically
-# parser.confidence_threshold = 0.3
-# parser.iou_threshold = 0.5
-
-# Use in your application
-from VisionParse import VisionParse
-parser = VisionParse(**VISIONPARSE_CONFIG)
 ```
 
 ## 🛠️ Advanced Usage
 
 ### Batch Processing
 ```python
-from VisionParse import VisionParse
-
 parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze_batch([
     'screen1.png', 'screen2.png', 'screen3.png'
@@ -390,35 +342,18 @@ print(f"Processed {results['summary']['successful']} images")
 
 ### Custom YOLO Settings
 ```python
-# Method 1: During initialization
-parser = VisionParse(
-    provider='openai',
-    model='gpt-4o',
-    confidence_threshold=0.3,  # Higher confidence threshold
-    iou_threshold=0.5,         # Different IoU threshold
-    yolo_model_path='custom_model.pt'
-)
-
-# Method 2: Update after initialization
-parser = VisionParse(provider='openai', model='gpt-4o')
-parser.confidence_threshold = 0.3
-parser.iou_threshold = 0.5
-
-# Method 3: Different settings for different images
+# Dynamic threshold adjustment
 parser = VisionParse(provider='openai', model='gpt-4o')
 
-# Analyze with default settings
-results1 = parser.analyze('screenshot1.png')
+# More sensitive detection
+parser.confidence_threshold = 0.1
+parser.iou_threshold = 0.3
+results = parser.analyze('screenshot.png')
 
-# Change settings for more sensitive detection
-parser.confidence_threshold = 0.1  # Lower = more detections
-parser.iou_threshold = 0.3         # Lower = less overlap filtering
-results2 = parser.analyze('screenshot2.png')
-
-# Change settings for stricter detection
-parser.confidence_threshold = 0.7  # Higher = fewer, confident detections
-parser.iou_threshold = 0.8         # Higher = more overlap allowed
-results3 = parser.analyze('screenshot3.png')
+# Stricter detection
+parser.confidence_threshold = 0.7
+parser.iou_threshold = 0.8
+results = parser.analyze('screenshot.png')
 ```
 
 ### Export Results
@@ -430,12 +365,25 @@ parser.export_results(results, 'output.csv', format='csv')
 parser.export_results(results, 'output.json', format='json')
 ```
 
+## 🧪 Testing
+
+Run the comprehensive test suite:
+```bash
+python test.py
+```
+
+The test will:
+- ✅ Check LlamaIndex package installations
+- ✅ Verify API key configuration from .env
+- ✅ Test all provider integrations
+- ✅ Validate VisionParse initialization
+
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Test thoroughly with `python test.py`
 5. Submit a pull request
 
 ## 📄 License
@@ -447,6 +395,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues:** [GitHub Issues](https://github.com/MaharshPatelX/VisionParse/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/MaharshPatelX/VisionParse/discussions)
 
+## 🏆 Powered By
+
+- **[LlamaIndex](https://www.llamaindex.ai/)** - Unified multimodal AI framework
+- **[Ultralytics YOLO](https://ultralytics.com/)** - Object detection
+- **[OpenAI](https://openai.com/)** - GPT-4o vision models
+- **[Anthropic](https://anthropic.com/)** - Claude vision models  
+- **[Google](https://ai.google.dev/)** - Gemini vision models
+- **[Ollama](https://ollama.com/)** - Local model inference
+
 ---
 
-**Made with ❤️ for the AI community**
+**Made with ❤️ for the AI community** | **Now with LlamaIndex integration for better multimodal AI**

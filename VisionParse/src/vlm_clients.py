@@ -2,8 +2,8 @@ import base64
 import io
 import os
 from PIL import Image
-import requests
-import json
+import re
+from typing import Dict, List, Optional, Any
 
 def encode_image_to_base64(image):
     """Convert PIL Image to base64 string"""
@@ -17,181 +17,136 @@ def encode_image_to_base64(image):
     return img_str
 
 def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI element in detail. What is its function?"):
-    """Analyze image using OpenAI models - Updated for 2024 API"""
+    """Analyze image using OpenAI models via LlamaIndex"""
     try:
-        from openai import OpenAI
+        from llama_index.llms.openai import OpenAI
+        from llama_index.core.schema import ImageDocument
+        from llama_index.core.multi_modal_llms import MultiModalLLM
+        from llama_index.multi_modal_llms.openai import OpenAIMultiModal
         
-        # Initialize client with latest API standards
-        client = OpenAI(
+        # Initialize OpenAI multimodal LLM
+        llm = OpenAIMultiModal(
+            model=model,
             api_key=api_key,
-            timeout=30.0,  # Add timeout for better error handling
+            temperature=0.1,
+            max_tokens=300
         )
         
-        # Encode image
-        base64_image = encode_image_to_base64(image)
+        # Convert PIL image to ImageDocument
+        if isinstance(image, str):
+            image = Image.open(image)
         
-        # Use the model name directly - no restrictions
-        actual_model = model
+        # Create image document
+        image_doc = ImageDocument(image=image)
         
-        response = client.chat.completions.create(
-            model=actual_model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text", 
-                            "text": prompt
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}",
-                                "detail": "auto"  # Auto-select detail level
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=300,  # Increased for better descriptions
-            temperature=0.1,  # Lower temperature for consistent results
+        # Generate response
+        response = llm.complete(
+            prompt=prompt,
+            image_documents=[image_doc]
         )
         
-        return response.choices[0].message.content.strip()
+        return response.text.strip()
     
     except Exception as e:
         return f"Error with OpenAI {model}: {str(e)}"
 
 def analyze_with_claude(image, api_key, model="claude-3-5-sonnet-20241022", prompt="Describe this UI element in detail. What is its function?"):
-    """Analyze image using Anthropic Claude - Updated for 2024 models"""
+    """Analyze image using Anthropic Claude via LlamaIndex"""
     try:
-        import anthropic
+        from llama_index.llms.anthropic import Anthropic
+        from llama_index.multi_modal_llms.anthropic import AnthropicMultiModal
+        from llama_index.core.schema import ImageDocument
         
-        # Initialize client with latest API standards
-        client = anthropic.Anthropic(
+        # Initialize Anthropic multimodal LLM
+        llm = AnthropicMultiModal(
+            model=model,
             api_key=api_key,
-            timeout=30.0,
+            temperature=0.1,
+            max_tokens=300
         )
         
-        # Encode image
-        base64_image = encode_image_to_base64(image)
+        # Convert PIL image to ImageDocument
+        if isinstance(image, str):
+            image = Image.open(image)
         
-        # Use the model name directly - no restrictions
-        actual_model = model
+        # Create image document
+        image_doc = ImageDocument(image=image)
         
-        response = client.messages.create(
-            model=actual_model,
-            max_tokens=300,  # Increased for better descriptions
-            temperature=0.1,  # Lower temperature for consistent results
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/png",
-                                "data": base64_image
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": prompt
-                        }
-                    ]
-                }
-            ]
+        # Generate response
+        response = llm.complete(
+            prompt=prompt,
+            image_documents=[image_doc]
         )
         
-        return response.content[0].text.strip()
+        return response.text.strip()
     
     except Exception as e:
         return f"Error with Claude {model}: {str(e)}"
 
 def analyze_with_gemini(image, api_key, model="gemini-2.0-flash-exp", prompt="Describe this UI element in detail. What is its function?"):
-    """Analyze image using Google Gemini - Updated for 2024/2025 models"""
+    """Analyze image using Google Gemini via LlamaIndex"""
     try:
-        import google.generativeai as genai
-        from google.generativeai import GenerationConfig
+        from llama_index.llms.gemini import Gemini
+        from llama_index.multi_modal_llms.gemini import GeminiMultiModal
+        from llama_index.core.schema import ImageDocument
         
-        # Configure API key
-        genai.configure(api_key=api_key)
-        
-        # Use the model name directly - no restrictions
-        actual_model = model
-        
-        # Initialize model with generation config
-        gen_model = genai.GenerativeModel(
-            model_name=actual_model,
-            generation_config=GenerationConfig(
-                temperature=0.1,  # Lower temperature for consistent results
-                top_p=0.95,
-                top_k=40,
-                max_output_tokens=300,  # Increased for better descriptions
-            )
+        # Initialize Gemini multimodal LLM
+        llm = GeminiMultiModal(
+            model=model,
+            api_key=api_key,
+            temperature=0.1,
+            max_tokens=300
         )
         
-        # Convert PIL to format Gemini expects
+        # Convert PIL image to ImageDocument
         if isinstance(image, str):
             image = Image.open(image)
         
-        # Generate content with multimodal prompt
-        response = gen_model.generate_content([prompt, image])
+        # Create image document
+        image_doc = ImageDocument(image=image)
         
-        # Handle response with safety checks
-        if response.parts:
-            return response.text.strip()
-        else:
-            # Check if blocked for safety reasons
-            if hasattr(response, 'prompt_feedback'):
-                return f"Response blocked due to safety filters: {response.prompt_feedback}"
-            return "No response generated"
+        # Generate response
+        response = llm.complete(
+            prompt=prompt,
+            image_documents=[image_doc]
+        )
+        
+        return response.text.strip()
     
     except Exception as e:
         return f"Error with Gemini {model}: {str(e)}"
 
 def analyze_with_ollama(image, model="llava:latest", base_url="http://localhost:11434", prompt="Describe this UI element in detail. What is its function?"):
-    """Analyze image using Ollama local models - 2024 implementation"""
+    """Analyze image using Ollama local models via LlamaIndex"""
     try:
-        import requests
-        import json
+        from llama_index.llms.ollama import Ollama
+        from llama_index.multi_modal_llms.ollama import OllamaMultiModal
+        from llama_index.core.schema import ImageDocument
         
-        # Convert PIL image to base64
-        base64_image = encode_image_to_base64(image)
-        
-        # Prepare the request payload for Ollama API
-        payload = {
-            "model": model,
-            "prompt": prompt,
-            "images": [base64_image],
-            "stream": False,
-            "options": {
-                "temperature": 0.1,
-                "top_p": 0.9,
-                "top_k": 40,
-                "num_predict": 300  # Max tokens
-            }
-        }
-        
-        # Make request to Ollama API
-        response = requests.post(
-            f"{base_url}/api/generate",
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=60  # Longer timeout for local models
+        # Initialize Ollama multimodal LLM
+        llm = OllamaMultiModal(
+            model=model,
+            base_url=base_url,
+            temperature=0.1,
+            context_window=4096,
+            request_timeout=60.0
         )
         
-        if response.status_code == 200:
-            result = response.json()
-            return result.get("response", "").strip()
-        else:
-            return f"Ollama API error: {response.status_code} - {response.text}"
+        # Convert PIL image to ImageDocument
+        if isinstance(image, str):
+            image = Image.open(image)
+        
+        # Create image document
+        image_doc = ImageDocument(image=image)
+        
+        # Generate response
+        response = llm.complete(
+            prompt=prompt,
+            image_documents=[image_doc]
+        )
+        
+        return response.text.strip()
     
-    except requests.exceptions.ConnectionError:
-        return "Error: Cannot connect to Ollama. Make sure Ollama is running on http://localhost:11434"
-    except requests.exceptions.Timeout:
-        return "Error: Ollama request timed out. The model might be too large or slow."
     except Exception as e:
         return f"Error with Ollama {model}: {str(e)}"
 
@@ -215,7 +170,7 @@ def get_available_ollama_models(base_url="http://localhost:11434"):
 
 def get_vlm_analysis(image, vlm_type, api_key, model=None, prompt="Describe this UI element in detail. What is its function?"):
     """
-    Get analysis from specified VLM - supports any VLM type and model
+    Get analysis from specified VLM using LlamaIndex - supports any VLM type and model
     
     Args:
         image: PIL Image or path to image
@@ -237,7 +192,7 @@ def get_vlm_analysis(image, vlm_type, api_key, model=None, prompt="Describe this
         model = model or "claude-3-5-sonnet-20241022"  # Default model
         return analyze_with_claude(image, api_key, model, prompt)
     elif any(keyword in vlm_type for keyword in ['gemini', 'google']):
-        model = model or "gemini-1.5-flash"  # Default model
+        model = model or "gemini-2.0-flash-exp"  # Default model
         return analyze_with_gemini(image, api_key, model, prompt)
     elif any(keyword in vlm_type for keyword in ['ollama', 'local']):
         model = model or "llava:latest"  # Default model
@@ -372,7 +327,7 @@ def parse_vlm_response(response_text):
         }
 
 def batch_analyze_regions(cropped_regions, vlm_type, api_key, model=None):
-    """Analyze multiple cropped regions with VLM and extract structured data"""
+    """Analyze multiple cropped regions with VLM using LlamaIndex and extract structured data"""
     results = []
     
     # Enhanced prompt to get structured information
@@ -388,7 +343,7 @@ Be specific and concise. Provide only the requested information."""
     for region in cropped_regions:
         print(f"Analyzing region {region['id']}...")
         
-        # Get VLM analysis
+        # Get VLM analysis using LlamaIndex
         response = get_vlm_analysis(
             region['image'], 
             vlm_type, 
