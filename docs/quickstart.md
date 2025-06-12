@@ -50,23 +50,26 @@ Follow the prompts:
 ### Step 3: Command Line (Direct)
 
 ```bash
-# Basic analysis
-visionparse screenshot.png --vlm gpt4o
+# Analyze with OpenAI GPT-4o
+visionparse screenshot.png --vlm openai --model gpt-4o
 
-# With custom model
-visionparse screenshot.png --vlm openai --model gpt-4.1
+# Analyze with Claude
+visionparse screenshot.png --vlm anthropic --model claude-3-5-sonnet
 
-# Save to specific folder
-visionparse screenshot.png --vlm claude --output results/
+# Analyze with Gemini
+visionparse screenshot.png --vlm google --model gemini-2.0-flash-exp
+
+# Local analysis (no API key needed)
+visionparse screenshot.png --vlm ollama --model llava:latest
 ```
 
-### Step 4: Python API (For Developers)
+### Step 4: Python API (Programmatic)
 
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
-# Initialize parser
-parser = VisionParse(vlm_type='gpt4o')
+# Initialize parser with provider + model
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Analyze screenshot
 results = parser.analyze('screenshot.png')
@@ -124,18 +127,20 @@ Element 1: Login Button
 ### Adjust Sensitivity
 
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
 # More sensitive detection (finds more elements)
 parser = VisionParse(
-    vlm_type='gpt4o',
+    provider='openai',
+    model='gpt-4o',
     confidence_threshold=0.1,  # Lower = more detections
     iou_threshold=0.3          # Lower = less filtering
 )
 
 # Stricter detection (fewer, more confident elements)
 parser = VisionParse(
-    vlm_type='gpt4o', 
+    provider='openai',
+    model='gpt-4o', 
     confidence_threshold=0.5,  # Higher = fewer detections
     iou_threshold=0.7          # Higher = more filtering
 )
@@ -145,16 +150,16 @@ parser = VisionParse(
 
 ```bash
 # Latest GPT models
-visionparse image.png --vlm openai --model gpt-4.1
-visionparse image.png --vlm openai --model gpt-4.1-mini
+visionparse image.png --vlm openai --model gpt-4o
+visionparse image.png --vlm openai --model gpt-4o-mini
 
 # Claude models
-visionparse image.png --vlm claude --model claude-4-opus
-visionparse image.png --vlm claude --model claude-3.5-sonnet
+visionparse image.png --vlm anthropic --model claude-3-5-sonnet
+visionparse image.png --vlm anthropic --model claude-3-haiku
 
 # Gemini models
-visionparse image.png --vlm google --model gemini-2.5-pro
-visionparse image.png --vlm google --model gemini-2.0-flash
+visionparse image.png --vlm google --model gemini-2.0-flash-exp
+visionparse image.png --vlm google --model gemini-1.5-flash
 ```
 
 ## 🏠 Free Local Analysis

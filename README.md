@@ -69,20 +69,21 @@ visionparse screenshot.png --vlm openai --model gpt-4.1
 
 ### Command Line Interface
 ```bash
-# Basic usage
-visionparse image.png --vlm gpt4o
+# Basic usage with provider + model
+visionparse image.png --vlm openai --model gpt-4o
 
 # Batch processing
 visionparse *.png --batch --output results/
 
-# Custom model
-visionparse image.png --vlm claude --model claude-4-opus
+# Different providers
+visionparse image.png --vlm anthropic --model claude-3-5-sonnet
+visionparse image.png --vlm google --model gemini-2.0-flash-exp
 
 # Local model (free)
 visionparse image.png --vlm ollama --model llava:latest
 
 # JSON output only
-visionparse image.png --json-only
+visionparse image.png --json-only --vlm openai --model gpt-4o
 ```
 
 ### Python API
@@ -160,11 +161,11 @@ VLM_PROVIDER=gpt4o
 ### Config File (config.json)
 ```json
 {
-  "vlm_type": "gpt4o",
+  "provider": "openai",
   "default_models": {
-    "openai": "gpt-4.1",
-    "anthropic": "claude-4-opus",
-    "google": "gemini-2.5-flash",
+    "openai": "gpt-4o",
+    "anthropic": "claude-3-5-sonnet",
+    "google": "gemini-2.0-flash-exp",
     "ollama": "llava:latest"
   },
   "yolo_config": {
@@ -208,17 +209,23 @@ VLM_PROVIDER=gpt4o
 
 ```
 VisionParse/
-├── src/                    # Core modules
-│   ├── vlm_parser.py      # Main API class
-│   ├── yolo_detector.py   # YOLO detection engine
-│   ├── vlm_clients.py     # Multi-VLM integrations
+├── VisionParse/            # Main package
+│   ├── src/               # Core modules
+│   │   ├── vlm_parser.py  # Main API class
+│   │   ├── yolo_detector.py # YOLO detection engine
+│   │   ├── vlm_clients.py # Multi-VLM integrations
+│   │   └── __init__.py    # Module exports
 │   └── __init__.py        # Package exports
 ├── cli.py                 # Command line interface
 ├── main.py               # Interactive mode
+├── simple_example.py     # Quick start example
 ├── config.json           # Configuration settings
 ├── requirements.txt      # Python dependencies
 ├── .env                  # API keys (create from .env.example)
-├── .env.example         # Template for API keys
+├── docs/                 # Documentation
+├── examples/             # Usage examples
+├── tests/                # Unit tests
+├── scripts/              # Utility scripts
 └── weights/             # YOLO model weights
     └── icon_detect/
         └── model.pt     # Pre-trained YOLO model
@@ -293,15 +300,21 @@ pip install git+https://github.com/MaharshPatelX/VisionParse.git
 
 ### Basic Library Usage
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
-# Simple usage with default settings
-parser = VisionParse(vlm_type='gpt4o')
+# Simple usage with provider + model
+parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze('screenshot.png')
+
+# Different providers
+parser = VisionParse(provider='anthropic', model='claude-3-5-sonnet')
+parser = VisionParse(provider='google', model='gemini-2.0-flash-exp')
+parser = VisionParse(provider='ollama', model='llava:latest')
 
 # Custom YOLO thresholds
 parser = VisionParse(
-    vlm_type='gpt4o',
+    provider='openai',
+    model='gpt-4o',
     confidence_threshold=0.3,  # Default: 0.05
     iou_threshold=0.5          # Default: 0.1
 )
@@ -321,15 +334,15 @@ for element in results['elements']:
 ### Integration in Your Application
 ```python
 import os
-from src import VisionParse, VisionParseError
+from VisionParse import VisionParse, VisionParseError
 
 class ScreenshotAnalyzer:
-    def __init__(self, vlm_type='gpt4o', model=None):
+    def __init__(self, provider='openai', model='gpt-4o'):
         # Load API key from environment
         api_key = os.getenv('OPENAI_API_KEY')
         
         self.parser = VisionParse(
-            vlm_type=vlm_type,
+            provider=provider,
             model=model,
             api_key=api_key,
             verbose=False
@@ -366,7 +379,7 @@ class ScreenshotAnalyzer:
         return []
 
 # Usage in your app
-analyzer = ScreenshotAnalyzer(vlm_type='claude', model='claude-4-opus')
+analyzer = ScreenshotAnalyzer(provider='anthropic', model='claude-3-5-sonnet')
 ui_elements = analyzer.analyze_ui('app_screenshot.png')
 clickable_elements = analyzer.get_clickable_elements('app_screenshot.png')
 ```

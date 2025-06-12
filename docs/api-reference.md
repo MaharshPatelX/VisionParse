@@ -16,38 +16,41 @@ Complete documentation for VisionParse Python API.
 
 ```python
 VisionParse(
-    config_path: Optional[str] = None,
-    vlm_type: Optional[str] = None,
+    provider: Optional[str] = None,
     model: Optional[str] = None,
     api_key: Optional[str] = None,
     confidence_threshold: float = 0.05,
     iou_threshold: float = 0.1,
     yolo_model_path: Optional[str] = None,
-    verbose: bool = False
+    config_path: Optional[str] = None,
+    verbose: bool = False,
+    # Backward compatibility
+    vlm_type: Optional[str] = None
 )
 ```
 
 **Parameters:**
-- `config_path` (str, optional): Path to configuration JSON file
-- `vlm_type` (str, optional): VLM provider ('gpt4o', 'openai', 'claude', 'google', 'ollama', or any custom provider)
-- `model` (str, optional): Specific model name (e.g., 'gpt-4.1', 'claude-4-opus')
+- `provider` (str, optional): VLM provider ('openai', 'anthropic', 'google', 'ollama', or any custom provider)
+- `model` (str, optional): Specific model name (e.g., 'gpt-4o', 'claude-3-5-sonnet', 'gemini-2.0-flash-exp')
 - `api_key` (str, optional): API key for VLM provider
 - `confidence_threshold` (float): YOLO confidence threshold (0.0-1.0, default: 0.05)
 - `iou_threshold` (float): YOLO IoU threshold (0.0-1.0, default: 0.1)
 - `yolo_model_path` (str, optional): Path to custom YOLO model weights
+- `config_path` (str, optional): Path to configuration JSON file
 - `verbose` (bool): Enable verbose logging (default: False)
+- `vlm_type` (str, optional): Deprecated, use `provider` instead
 
 **Example:**
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
 # Basic initialization
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Advanced initialization
 parser = VisionParse(
-    vlm_type='claude',
-    model='claude-4-opus',
+    provider='anthropic',
+    model='claude-3-5-sonnet',
     api_key='sk-ant-your-key',
     confidence_threshold=0.3,
     iou_threshold=0.5,
@@ -91,7 +94,7 @@ analyze(
 
 **Example:**
 ```python
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze('screenshot.png')
 
 if results['success']:

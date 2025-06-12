@@ -14,19 +14,25 @@ def load_config():
         print("Creating sample config.json file...")
         
         sample_config = {
-            "vlm_type": "gpt4o",
+            "provider": "openai",
             "api_keys": {
                 "openai": "your_openai_api_key_here",
                 "anthropic": "your_anthropic_api_key_here", 
                 "google": "your_google_api_key_here"
             },
-            "yolo_model_path": "../weights/icon_detect/model.pt",
-            "confidence_threshold": 0.3,
+            "yolo_model_path": "weights/icon_detect/model.pt",
+            "confidence_threshold": 0.05,
+            "default_models": {
+                "openai": "gpt-4o",
+                "anthropic": "claude-3-5-sonnet",
+                "google": "gemini-2.0-flash-exp",
+                "ollama": "llava:latest"
+            },
             "available_models": {
-                "openai": ["gpt-4o", "gpt-4", "gpt-4-turbo", "gpt-4-vision-preview"],
-                "anthropic": ["claude-3-5-sonnet-20241022", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
-                "google": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
-                "ollama": ["llava:latest", "llava:7b", "minicpm-v:latest"]
+                "openai": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1"],
+                "anthropic": ["claude-3-5-sonnet", "claude-3-5-haiku", "claude-3-opus"],
+                "google": ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro"],
+                "ollama": ["llava:latest", "minicpm-v:latest", "moondream:latest"]
             },
             "note": "You can use any model name, not just the ones listed above"
         }
@@ -40,34 +46,34 @@ def load_config():
     with open(config_path, 'r') as f:
         return json.load(f)
 
-def get_api_key(config, vlm_type):
-    """Get API key for specified VLM type - supports any VLM type"""
-    vlm_mapping = {
-        'gpt4o': 'openai',
-        'claude': 'anthropic', 
-        'gemini': 'google',
+def get_api_key(config, provider):
+    """Get API key for specified provider - supports any provider"""
+    provider_mapping = {
         'openai': 'openai',
-        'anthropic': 'anthropic',
-        'google': 'google'
+        'anthropic': 'anthropic', 
+        'google': 'google',
+        'gpt4o': 'openai',  # Backward compatibility
+        'claude': 'anthropic',  # Backward compatibility
+        'gemini': 'google'  # Backward compatibility
     }
     
     # First try direct mapping
-    key_name = vlm_mapping.get(vlm_type.lower())
+    key_name = provider_mapping.get(provider.lower())
     if key_name:
         return config['api_keys'].get(key_name)
     
-    # For unknown VLM types, try pattern matching
-    vlm_lower = vlm_type.lower()
-    if 'gpt' in vlm_lower or 'openai' in vlm_lower:
+    # For unknown providers, try pattern matching
+    provider_lower = provider.lower()
+    if 'gpt' in provider_lower or 'openai' in provider_lower:
         return config['api_keys'].get('openai')
-    elif 'claude' in vlm_lower or 'anthropic' in vlm_lower:
+    elif 'claude' in provider_lower or 'anthropic' in provider_lower:
         return config['api_keys'].get('anthropic')
-    elif 'gemini' in vlm_lower or 'google' in vlm_lower:
+    elif 'gemini' in provider_lower or 'google' in provider_lower:
         return config['api_keys'].get('google')
     
     # If no pattern matches, try to find the key in config
-    if vlm_type in config.get('api_keys', {}):
-        return config['api_keys'][vlm_type]
+    if provider in config.get('api_keys', {}):
+        return config['api_keys'][provider]
     
     return None
 
@@ -99,45 +105,45 @@ def main():
     
     choice = input("Enter choice (1-4) or VLM name: ").strip().lower()
     
-    # Basic mapping for numbered choices, but accept any VLM name
+    # Basic mapping for numbered choices, but accept any provider name
     if choice == '1':
-        vlm_type = 'gpt4o'
+        provider = 'openai'
     elif choice == '2':
-        vlm_type = 'claude'
+        provider = 'anthropic'
     elif choice == '3':
-        vlm_type = 'gemini'
+        provider = 'google'
     elif choice == '4':
-        vlm_type = 'ollama'
+        provider = 'ollama'
     elif choice in ['gpt4o', 'openai']:
-        vlm_type = 'gpt4o'
+        provider = 'openai'
     elif choice in ['claude', 'anthropic']:
-        vlm_type = 'claude'
+        provider = 'anthropic'
     elif choice in ['gemini', 'google']:
-        vlm_type = 'gemini'
+        provider = 'google'
     elif choice in ['ollama', 'local']:
-        vlm_type = 'ollama'
+        provider = 'ollama'
     else:
-        # Accept any VLM type name
-        vlm_type = choice if choice else config.get('vlm_type', 'gpt4o')
+        # Accept any provider name
+        provider = choice if choice else config.get('provider', config.get('vlm_type', 'openai'))
     
     # Get model choice - accept any model name
     model_name = None
     
     # Show available models if configured, but always allow custom input
     available_models = []
-    if vlm_type in ['gpt4o', 'openai']:
+    if provider in ['openai']:
         available_models = config.get('available_models', {}).get('openai', ['gpt-4o'])
         print(f"\n📋 Suggested OpenAI models:")
-    elif vlm_type in ['claude', 'anthropic']:
-        available_models = config.get('available_models', {}).get('anthropic', ['claude-3-5-sonnet-20241022'])
+    elif provider in ['anthropic']:
+        available_models = config.get('available_models', {}).get('anthropic', ['claude-3-5-sonnet'])
         print(f"\n📋 Suggested Claude models:")
-    elif vlm_type in ['gemini', 'google']:
-        available_models = config.get('available_models', {}).get('google', ['gemini-1.5-flash'])
+    elif provider in ['google']:
+        available_models = config.get('available_models', {}).get('google', ['gemini-2.0-flash-exp'])
         print(f"\n📋 Suggested Gemini models:")
-    elif vlm_type == 'ollama':
+    elif provider == 'ollama':
         # Try to get available models from Ollama
         try:
-            from vlm_clients import get_available_ollama_models
+            from VisionParse.src.vlm_clients import get_available_ollama_models
             available_models = get_available_ollama_models(
                 config.get('ollama_config', {}).get('base_url', 'http://localhost:11434')
             )
@@ -147,12 +153,12 @@ def main():
             available_models = config.get('available_models', {}).get('ollama', ['llava:latest'])
             print(f"\n📋 Default Ollama models:")
     else:
-        # For unknown VLM types, check if there are configured models
-        available_models = config.get('available_models', {}).get(vlm_type, [])
+        # For unknown providers, check if there are configured models
+        available_models = config.get('available_models', {}).get(provider, [])
         if available_models:
-            print(f"\n📋 Available {vlm_type} models:")
+            print(f"\n📋 Available {provider} models:")
         else:
-            print(f"\n📋 Enter model name for {vlm_type}:")
+            print(f"\n📋 Enter model name for {provider}:")
     
     # Display available models if any
     if available_models:
@@ -171,26 +177,23 @@ def main():
     # Set defaults if no model specified
     if not model_name:
         default_models = {
-            'gpt4o': 'gpt-4o',
             'openai': 'gpt-4o', 
-            'claude': 'claude-3-5-sonnet-20241022',
-            'anthropic': 'claude-3-5-sonnet-20241022',
-            'gemini': 'gemini-1.5-flash',
-            'google': 'gemini-1.5-flash',
+            'anthropic': 'claude-3-5-sonnet',
+            'google': 'gemini-2.0-flash-exp',
             'ollama': 'llava:latest'
         }
-        model_name = default_models.get(vlm_type) or config.get('model_name')
+        model_name = default_models.get(provider) or config.get('model_name', 'gpt-4o')
     
     # Get API key (skip for Ollama and other local models)
     api_key = None
-    if vlm_type != 'ollama' and 'local' not in vlm_type.lower():
-        api_key = get_api_key(config, vlm_type)
+    if provider != 'ollama' and 'local' not in provider.lower():
+        api_key = get_api_key(config, provider)
         if not api_key or any(placeholder in api_key for placeholder in ['your_', '_key_here']):
-            print(f"❌ Please add your {vlm_type.upper()} API key to config.json")
-            print(f"💡 For local models, use 'ollama' or include 'local' in the VLM type name")
+            print(f"❌ Please add your {provider.upper()} API key to config.json")
+            print(f"💡 For local models, use 'ollama' or include 'local' in the provider name")
             return
     
-    print(f"✅ Using {vlm_type.upper()}")
+    print(f"✅ Using {provider.upper()}")
     if model_name:
         print(f"✅ Model: {model_name}")
     print(f"✅ Screenshot: {screenshot_path}")
@@ -217,8 +220,8 @@ def main():
         cropped_regions = crop_image_regions(screenshot_path, detected_boxes)
         
         # Step 3: VLM Analysis
-        print(f"\n🧠 Step 3: Analyzing with {vlm_type.upper()}...")
-        results = batch_analyze_regions(cropped_regions, vlm_type, api_key, model_name)
+        print(f"\n🧠 Step 3: Analyzing with {provider.upper()}...")
+        results = batch_analyze_regions(cropped_regions, provider, api_key, model_name)
         
         # Step 4: Display Results
         print("\n📋 RESULTS:")

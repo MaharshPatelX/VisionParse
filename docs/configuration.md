@@ -21,7 +21,7 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 GOOGLE_API_KEY=your-google-api-key
 
 # Default VLM provider
-VLM_PROVIDER=gpt4o
+VLM_PROVIDER=openai
 ```
 
 ### YOLO Configuration
@@ -46,7 +46,7 @@ OLLAMA_TIMEOUT=60
 # VisionParse Configuration
 
 # Primary VLM Provider
-VLM_PROVIDER=gpt4o
+VLM_PROVIDER=openai
 
 # API Keys (add only the ones you need)
 OPENAI_API_KEY=sk-proj-abc123...
@@ -71,11 +71,11 @@ VERBOSE=false
 ### Complete Configuration
 ```json
 {
-  "vlm_type": "gpt4o",
+  "provider": "openai",
   "default_models": {
-    "openai": "gpt-4.1",
-    "anthropic": "claude-4-opus",
-    "google": "gemini-2.5-flash",
+    "openai": "gpt-4o",
+    "anthropic": "claude-3-5-sonnet",
+    "google": "gemini-2.0-flash-exp",
     "ollama": "llava:latest"
   },
   "yolo_model_path": "weights/icon_detect/model.pt",
@@ -94,7 +94,7 @@ VERBOSE=false
 ### Minimal Configuration
 ```json
 {
-  "vlm_type": "gpt4o",
+  "provider": "openai",
   "confidence_threshold": 0.05,
   "yolo_config": {
     "iou_threshold": 0.1
@@ -106,15 +106,15 @@ VERBOSE=false
 
 ### Basic Setup
 ```python
-from src import VisionParse
+from VisionParse import VisionParse
 
 # Minimal configuration
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Custom configuration
 parser = VisionParse(
-    vlm_type='claude',
-    model='claude-4-opus',
+    provider='anthropic',
+    model='claude-3-5-sonnet',
     api_key='sk-ant-your-key',
     confidence_threshold=0.3,
     iou_threshold=0.5,
@@ -124,15 +124,15 @@ parser = VisionParse(
 
 ### Runtime Configuration Changes
 ```python
-parser = VisionParse(vlm_type='gpt4o')
+parser = VisionParse(provider='openai', model='gpt-4o')
 
 # Change detection sensitivity
 parser.confidence_threshold = 0.1  # More sensitive
 parser.iou_threshold = 0.3         # Less filtering
 
 # Switch models
-parser.vlm_type = 'claude'
-parser.model = 'claude-3.5-sonnet'
+parser.provider = 'anthropic'
+parser.model = 'claude-3-5-sonnet'
 parser.api_key = 'sk-ant-new-key'
 ```
 
@@ -146,18 +146,18 @@ VLM_PROVIDER=openai
 
 # Code configuration
 parser = VisionParse(
-    vlm_type='openai',
-    model='gpt-4.1',           # Latest GPT model
+    provider='openai',
+    model='gpt-4o',           # Latest GPT model
     api_key='sk-your-key'
 )
 
 # Available models (examples)
 models = [
-    'gpt-4.1',          # Latest flagship
-    'gpt-4.1-mini',     # Fast and efficient
-    'gpt-4.1-nano',     # Fastest and cheapest
-    'gpt-4o',           # Multimodal
-    'gpt-4-turbo'       # Previous generation
+    'gpt-4o',          # Flagship multimodal
+    'gpt-4o-mini',     # Fast and efficient
+    'gpt-4-turbo',     # Previous generation
+    'gpt-4',           # Classic GPT-4
+    'o1',              # Reasoning model
 ]
 ```
 
@@ -165,22 +165,22 @@ models = [
 ```python
 # Environment variables
 ANTHROPIC_API_KEY=sk-ant-your-key
-VLM_PROVIDER=claude
+VLM_PROVIDER=anthropic
 
 # Code configuration
 parser = VisionParse(
-    vlm_type='claude',
-    model='claude-4-opus',
+    provider='anthropic',
+    model='claude-3-5-sonnet',
     api_key='sk-ant-your-key'
 )
 
 # Available models (examples)
 models = [
-    'claude-4-opus',           # Latest flagship
-    'claude-4-sonnet',         # Balanced performance
-    'claude-3.7-sonnet',       # Hybrid reasoning
-    'claude-3.5-sonnet',       # Strong vision
-    'claude-3.5-haiku'         # Fast and efficient
+    'claude-3-5-sonnet-20241022',  # Latest Sonnet
+    'claude-3-5-haiku-20241022',   # Fast and efficient
+    'claude-3-opus-20240229',      # Most capable
+    'claude-3-sonnet-20240229',    # Balanced
+    'claude-3-haiku-20240307'      # Fastest
 ]
 ```
 

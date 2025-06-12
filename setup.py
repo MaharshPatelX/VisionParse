@@ -21,11 +21,11 @@ setup(
     description="Production-ready tool for analyzing screenshots and extracting UI elements using Vision Language Models",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/visionparse/visionparse",
+    url="https://github.com/MaharshPatelX/VisionParse",
     project_urls={
-        "Bug Tracker": "https://github.com/visionparse/visionparse/issues",
-        "Documentation": "https://visionparse.readthedocs.io/",
-        "Source Code": "https://github.com/visionparse/visionparse",
+        "Bug Tracker": "https://github.com/MaharshPatelX/VisionParse/issues",
+        "Documentation": "https://github.com/MaharshPatelX/VisionParse/blob/main/README.md",
+        "Source Code": "https://github.com/MaharshPatelX/VisionParse",
     },
     packages=find_packages(),
     classifiers=[
