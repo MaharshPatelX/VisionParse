@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Any
 
 # Disable LlamaIndex HTTP request logging
 logging.getLogger("llama_index.core.base.llms.base").setLevel(logging.WARNING)
+logging.getLogger("llama_index.llms.google_genai").setLevel(logging.WARNING)
 logging.getLogger("openai").setLevel(logging.WARNING)
 logging.getLogger("anthropic").setLevel(logging.WARNING)
 logging.getLogger("google.generativeai").setLevel(logging.WARNING)
@@ -115,6 +116,7 @@ def analyze_with_claude(image, api_key, model="claude-sonnet-4-0", prompt="Descr
         else:
             # PIL Image - save to temporary file
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            temp_file.close()  # Close file handle to prevent Windows file lock issues
             image.save(temp_file.name, format='PNG')
             image_path = temp_file.name
         
@@ -165,6 +167,7 @@ def analyze_with_gemini(image, api_key, model="gemini-1.5-pro", prompt="Describe
         else:
             # PIL Image - save to temporary file
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            temp_file.close()  # Close file handle to prevent Windows file lock issues
             image.save(temp_file.name, format='PNG')
             image_path = temp_file.name
         
@@ -215,6 +218,7 @@ def analyze_with_ollama(image, model="qwen2.5vl:3b", base_url="http://localhost:
         else:
             # PIL Image - save to temporary file
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            temp_file.close()  # Close file handle to prevent Windows file lock issues
             image.save(temp_file.name, format='PNG')
             image_path = temp_file.name
         
