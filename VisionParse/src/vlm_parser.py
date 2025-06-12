@@ -199,26 +199,30 @@ class VisionParse:
             raise VisionParseError("IoU threshold must be between 0 and 1")
     
     def _get_default_model(self) -> str:
-        """Get default model for the current provider"""
-        # Allow any model name - provide sensible defaults based on provider patterns
+        """Get default model for the current provider using only supported models"""
+        from .vlm_clients import SUPPORTED_MODELS
+        
+        # Get default models from config
         default_models = self.config.get('default_models', {})
         
-        # Check for exact matches first
+        # Check for exact matches first (ensure it's supported)
         if self.provider in default_models:
-            return default_models[self.provider]
+            config_model = default_models[self.provider]
+            if self.provider in SUPPORTED_MODELS and config_model in SUPPORTED_MODELS[self.provider]:
+                return config_model
         
-        # Pattern-based fallbacks for common providers
+        # Pattern-based fallbacks using only supported models
         if 'gpt' in self.provider.lower() or 'openai' in self.provider.lower():
-            return default_models.get('openai', 'gpt-4o')
+            return SUPPORTED_MODELS['openai'][0]  # First supported OpenAI model
         elif 'claude' in self.provider.lower() or 'anthropic' in self.provider.lower():
-            return default_models.get('anthropic', 'claude-3-5-sonnet')
+            return SUPPORTED_MODELS['anthropic'][0]  # First supported Anthropic model
         elif 'gemini' in self.provider.lower() or 'google' in self.provider.lower():
-            return default_models.get('google', 'gemini-2.0-flash-exp')
+            return SUPPORTED_MODELS['google'][0]  # First supported Google model
         elif 'ollama' in self.provider.lower():
-            return default_models.get('ollama', 'llava:latest')
+            return SUPPORTED_MODELS['ollama'][0]  # First supported Ollama model
         else:
-            # Default fallback for any unknown provider
-            return 'gpt-4o'
+            # Default fallback to first supported OpenAI model
+            return SUPPORTED_MODELS['openai'][0]
     
     def analyze(
         self,

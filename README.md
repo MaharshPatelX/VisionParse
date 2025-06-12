@@ -27,6 +27,33 @@ curl -o weights\icon_detect\train_args.yaml https://raw.githubusercontent.com/Ma
 - **Structured Output**: JSON with coordinates, types, and descriptions
 - **Production Ready**: Python library with batch processing support
 - **Local Models**: Private analysis with Ollama (free & offline)
+- **Model Validation**: Strict validation ensures only supported models are used
+
+## Supported Models
+
+VisionParse enforces strict model validation. Only these models are supported:
+
+### OpenAI
+- `gpt-4o`
+- `gpt-4o-mini`
+- `gpt-4.1`
+- `gpt-4.1-mini`
+
+### Anthropic
+- `claude-3-5-sonnet-latest`
+- `claude-3-7-sonnet-latest`
+- `claude-sonnet-4-0`
+- `claude-opus-4-0`
+
+### Google
+- `gemini-2.5-flash-preview-05-20`
+- `gemini-2.0-flash`
+- `gemini-1.5-pro`
+- `gemini-1.5-flash`
+
+### Ollama (Local)
+- `gemma3:4b`
+- `qwen2.5vl:3b`
 
 ## Usage
 
@@ -40,10 +67,10 @@ parser = VisionParse(provider='openai', model='gpt-4o')
 results = parser.analyze('screenshot.png')
 print(f"Found {len(results['elements'])} UI elements")
 
-# Different providers
-parser = VisionParse(provider='anthropic', model='claude-3-5-sonnet')
-parser = VisionParse(provider='google', model='gemini-2.0-flash-exp')
-parser = VisionParse(provider='ollama', model='llava:latest')
+# Different providers with supported models
+parser = VisionParse(provider='anthropic', model='claude-3-5-sonnet-latest')
+parser = VisionParse(provider='google', model='gemini-1.5-pro')
+parser = VisionParse(provider='ollama', model='qwen2.5vl:3b')
 
 # Batch processing
 results = parser.analyze_batch(['img1.png', 'img2.png'])
@@ -94,6 +121,28 @@ export GOOGLE_API_KEY="your-google-key"
 - **API Keys:** At least one VLM provider API key (or use Ollama locally)
 - **Memory:** 4GB RAM minimum (8GB recommended for local models)
 
+## Error Handling
+
+VisionParse includes comprehensive error handling for unsupported models:
+
+```python
+from VisionParse import VisionParse, VisionParseError
+
+try:
+    # This will raise an error - unsupported model
+    parser = VisionParse(provider='openai', model='gpt-3.5-turbo')
+except VisionParseError as e:
+    print(f"Error: {e}")
+    # Output: "Unsupported model 'gpt-3.5-turbo' for provider 'openai'. Supported models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini']"
+
+try:
+    # This will also raise an error - unsupported provider
+    parser = VisionParse(provider='huggingface', model='any-model')
+except VisionParseError as e:
+    print(f"Error: {e}")
+    # Output: "Unsupported provider 'huggingface'. Supported providers: ['openai', 'anthropic', 'google', 'ollama']"
+```
+
 ## Integration Example
 
 ```python
@@ -125,8 +174,8 @@ class ScreenshotAnalyzer:
         except VisionParseError as e:
             return {'error': str(e)}
 
-# Usage
-analyzer = ScreenshotAnalyzer(provider='anthropic', model='claude-3-5-sonnet')
+# Usage with supported models
+analyzer = ScreenshotAnalyzer(provider='anthropic', model='claude-3-5-sonnet-latest')
 ui_elements = analyzer.analyze_ui('app_screenshot.png')
 ```
 

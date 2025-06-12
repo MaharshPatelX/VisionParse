@@ -14,6 +14,30 @@ logging.getLogger("google.generativeai").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
+# Supported models for each provider
+SUPPORTED_MODELS = {
+    "openai": ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"],
+    "anthropic": ["claude-3-5-sonnet-latest", "claude-3-7-sonnet-latest", "claude-sonnet-4-0", "claude-opus-4-0"],
+    "google": ["gemini-2.5-flash-preview-05-20", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+    "ollama": ["gemma3:4b", "qwen2.5vl:3b"]
+}
+
+def validate_model(model, provider):
+    """Validate if model is supported for the given provider"""
+    provider = provider.lower()
+    
+    # Check if provider exists in supported models
+    if provider not in SUPPORTED_MODELS:
+        supported_providers = list(SUPPORTED_MODELS.keys())
+        raise ValueError(f"Unsupported provider '{provider}'. Supported providers: {supported_providers}")
+    
+    # Check if model is supported for this provider
+    if model not in SUPPORTED_MODELS[provider]:
+        supported_models = SUPPORTED_MODELS[provider]
+        raise ValueError(f"Unsupported model '{model}' for provider '{provider}'. Supported models: {supported_models}")
+    
+    return True
+
 def encode_image_to_base64(image):
     """Convert PIL Image to base64 string"""
     if isinstance(image, str):
@@ -28,6 +52,8 @@ def encode_image_to_base64(image):
 def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using OpenAI models via LlamaIndex"""
     try:
+        # Validate model
+        validate_model(model, "openai")
         from llama_index.multi_modal_llms.openai import OpenAIMultiModal
         from llama_index.core.schema import ImageDocument
         import io
@@ -67,6 +93,8 @@ def analyze_with_openai(image, api_key, model="gpt-4o", prompt="Describe this UI
 def analyze_with_claude(image, api_key, model="claude-sonnet-4-0", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Anthropic Claude via LlamaIndex with Claude 4 workaround"""
     try:
+        # Validate model
+        validate_model(model, "anthropic")
         from llama_index.llms.anthropic import Anthropic
         from llama_index.core.llms import ChatMessage, TextBlock, ImageBlock
         import tempfile
@@ -114,79 +142,102 @@ def analyze_with_claude(image, api_key, model="claude-sonnet-4-0", prompt="Descr
     except Exception as e:
         return f"Error with Claude {model}: {str(e)}"
 
-def analyze_with_gemini(image, api_key, model="gemini-2.0-flash-exp", prompt="Describe this UI element in detail. What is its function?"):
+def analyze_with_gemini(image, api_key, model="gemini-1.5-pro", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Google Gemini via LlamaIndex"""
     try:
-        from llama_index.multi_modal_llms.gemini import GeminiMultiModal
-        from llama_index.core.schema import ImageDocument
-        import io
+        # Validate model
+        validate_model(model, "google")
+        from llama_index.llms.google_genai import GoogleGenAI
+        from llama_index.core.llms import ChatMessage, TextBlock, ImageBlock
+        import tempfile
+        import os
         
-        # Initialize Gemini multimodal LLM
-        llm = GeminiMultiModal(
+        # Initialize Google Gemini LLM
+        llm = GoogleGenAI(
             model=model,
-            api_key=api_key,
-            temperature=0.1,
-            max_tokens=300
+            api_key=api_key
         )
         
-        # Convert PIL image to bytes for ImageDocument
+        # Handle image input - save to temporary file if PIL Image
         if isinstance(image, str):
-            image = Image.open(image)
+            # Already a file path
+            image_path = image
+        else:
+            # PIL Image - save to temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            image.save(temp_file.name, format='PNG')
+            image_path = temp_file.name
         
-        # Convert PIL image to bytes
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_bytes = img_byte_arr.getvalue()
-        
-        # Create image document with bytes
-        image_doc = ImageDocument(image=img_bytes)
-        
-        # Generate response
-        response = llm.complete(
-            prompt=prompt,
-            image_documents=[image_doc]
-        )
-        
-        return response.text.strip()
+        try:
+            # Create message with image and text
+            messages = [
+                ChatMessage(
+                    role="user",
+                    blocks=[
+                        TextBlock(text=prompt),
+                        ImageBlock(path=image_path),
+                    ],
+                )
+            ]
+            
+            # Get response
+            response = llm.chat(messages)
+            return response.message.content.strip()
+            
+        finally:
+            # Clean up temporary file if we created one
+            if not isinstance(image, str) and os.path.exists(image_path):
+                os.unlink(image_path)
     
     except Exception as e:
         return f"Error with Gemini {model}: {str(e)}"
 
-def analyze_with_ollama(image, model="llava:latest", base_url="http://localhost:11434", prompt="Describe this UI element in detail. What is its function?"):
+def analyze_with_ollama(image, model="qwen2.5vl:3b", base_url="http://localhost:11434", prompt="Describe this UI element in detail. What is its function?"):
     """Analyze image using Ollama local models via LlamaIndex"""
     try:
-        from llama_index.multi_modal_llms.ollama import OllamaMultiModal
-        from llama_index.core.schema import ImageDocument
-        import io
+        # Validate model
+        validate_model(model, "ollama")
+        from llama_index.llms.ollama import Ollama
+        from llama_index.core.llms import ChatMessage, TextBlock, ImageBlock
+        import tempfile
+        import os
         
-        # Initialize Ollama multimodal LLM
-        llm = OllamaMultiModal(
+        # Initialize Ollama LLM
+        llm = Ollama(
             model=model,
-            base_url=base_url,
-            temperature=0.1,
-            context_window=4096,
-            request_timeout=60.0
+            request_timeout=120
         )
         
-        # Convert PIL image to bytes for ImageDocument
+        # Handle image input - save to temporary file if PIL Image
         if isinstance(image, str):
-            image = Image.open(image)
+            # Already a file path
+            image_path = image
+        else:
+            # PIL Image - save to temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            image.save(temp_file.name, format='PNG')
+            image_path = temp_file.name
         
-        # Convert PIL image to bytes
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_bytes = img_byte_arr.getvalue()
-        
-        # Create image document with bytes
-        image_doc = ImageDocument(image=img_bytes)
-        
-        # Generate response
-        response = llm.complete(
-            prompt=prompt,
-            image_documents=[image_doc]
-        )
-        
-        return response.text.strip()
+        try:
+            # Create message with image and text
+            messages = [
+                ChatMessage(
+                    role="user",
+                    blocks=[
+                        TextBlock(text=prompt),
+                        ImageBlock(path=image_path),
+                    ],
+                )
+            ]
+            
+            # Get response
+            response = llm.chat(messages)
+            return response.message.content.strip()
+            
+        finally:
+            # Clean up temporary file if we created one
+            if not isinstance(image, str) and os.path.exists(image_path):
+                os.unlink(image_path)
     
     except Exception as e:
         return f"Error with Ollama {model}: {str(e)}"
@@ -230,32 +281,18 @@ def get_vlm_analysis(image, vlm_type, api_key, model=None, prompt="Describe this
         model = model or "gpt-4o"  # Default model
         return analyze_with_openai(image, api_key, model, prompt)
     elif any(keyword in vlm_type for keyword in ['claude', 'anthropic']):
-        model = model or "claude-3-5-sonnet-20241022"  # Default model
+        model = model or "claude-3-5-sonnet-latest"  # Default model
         return analyze_with_claude(image, api_key, model, prompt)
     elif any(keyword in vlm_type for keyword in ['gemini', 'google']):
-        model = model or "gemini-2.0-flash-exp"  # Default model
+        model = model or "gemini-1.5-pro"  # Default model
         return analyze_with_gemini(image, api_key, model, prompt)
     elif any(keyword in vlm_type for keyword in ['ollama', 'local']):
-        model = model or "llava:latest"  # Default model
+        model = model or "qwen2.5vl:3b"  # Default model
         return analyze_with_ollama(image, model, prompt=prompt)
     else:
-        # For unknown VLM types, try to determine the provider
-        # Check if it looks like an OpenAI model name
-        if any(pattern in vlm_type for pattern in ['gpt', 'davinci', 'curie', 'babbage', 'ada']):
-            return analyze_with_openai(image, api_key, model or vlm_type, prompt)
-        # Check if it looks like a Claude model name
-        elif any(pattern in vlm_type for pattern in ['claude', 'sonnet', 'haiku', 'opus']):
-            return analyze_with_claude(image, api_key, model or vlm_type, prompt)
-        # Check if it looks like a Gemini model name
-        elif any(pattern in vlm_type for pattern in ['gemini', 'palm', 'bison']):
-            return analyze_with_gemini(image, api_key, model or vlm_type, prompt)
-        # Check if it looks like a local/Ollama model name
-        elif any(pattern in vlm_type for pattern in ['llava', 'mistral', 'llama', 'vicuna', 'alpaca']):
-            return analyze_with_ollama(image, model or vlm_type, prompt=prompt)
-        else:
-            # Default to OpenAI if cannot determine - pass the vlm_type as model name
-            print(f"⚠️  Unknown VLM type '{vlm_type}', defaulting to OpenAI API")
-            return analyze_with_openai(image, api_key, model or vlm_type, prompt)
+        # For unknown VLM types, reject with supported options
+        supported_providers = list(SUPPORTED_MODELS.keys())
+        return f"Error: Unsupported VLM type '{vlm_type}'. Supported providers: {supported_providers}. Use format: 'provider' with supported model."
 
 def parse_vlm_response(response_text):
     """Parse VLM response to extract structured information"""
