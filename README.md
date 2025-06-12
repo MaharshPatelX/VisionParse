@@ -11,6 +11,13 @@
 ```bash
 pip install git+https://github.com/MaharshPatelX/VisionParse.git
 ```
+```bash
+mkdir weights\icon_detect
+
+curl -o weights\icon_detect\best.pt https://raw.githubusercontent.com/MaharshPatelX/VisionParse/main/weights/icon_detect/best.pt
+curl -o weights\icon_detect\data.yaml https://raw.githubusercontent.com/MaharshPatelX/VisionParse/main/weights/icon_detect/data.yaml
+curl -o weights\icon_detect\icon_det.yaml https://raw.githubusercontent.com/MaharshPatelX/VisionParse/main/weights/icon_detect/icon_det.yaml
+```
 
 ## Features
 
