@@ -14,9 +14,10 @@ pip install git+https://github.com/MaharshPatelX/VisionParse.git
 ```bash
 mkdir weights\icon_detect
 
-curl -o weights\icon_detect\model.pt https://github.com/MaharshPatelX/VisionParse/blob/main/weights/icon_detect/model.pt
-curl -o weights\icon_detect\model.yaml https://github.com/MaharshPatelX/VisionParse/blob/main/weights/icon_detect/model.yaml
-curl -o weights\icon_detect\train_args.yaml https://github.com/MaharshPatelX/VisionParse/blob/main/weights/icon_detect/train_args.yaml
+curl -o weights\icon_detect\model.pt https://raw.githubusercontent.com/MaharshPatelX/VisionParse/refs/heads/main/weights/icon_detect/model.pt
+curl -o weights\icon_detect\model.yaml https://raw.githubusercontent.com/MaharshPatelX/VisionParse/refs/heads/main/weights/icon_detect/model.yaml
+curl -o weights\icon_detect\train_args.yaml https://raw.githubusercontent.com/MaharshPatelX/VisionParse/refs/heads/main/weights/icon_detect/train_args.yaml
+
 ```
 
 ## Features
