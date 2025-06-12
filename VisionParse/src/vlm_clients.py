@@ -1,9 +1,18 @@
 import base64
 import io
 import os
+import logging
 from PIL import Image
 import re
 from typing import Dict, List, Optional, Any
+
+# Disable LlamaIndex HTTP request logging
+logging.getLogger("llama_index.core.base.llms.base").setLevel(logging.WARNING)
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("anthropic").setLevel(logging.WARNING)
+logging.getLogger("google.generativeai").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 def encode_image_to_base64(image):
     """Convert PIL Image to base64 string"""
