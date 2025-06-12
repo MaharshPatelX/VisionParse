@@ -348,6 +348,8 @@ def parse_vlm_response(response_text):
 
 def batch_analyze_regions(cropped_regions, vlm_type, api_key, model=None):
     """Analyze multiple cropped regions with VLM using LlamaIndex and extract structured data"""
+    from tqdm import tqdm
+    
     results = []
     
     # Enhanced prompt to get structured information
@@ -360,9 +362,8 @@ Description: [Brief description of the element's purpose]
 
 Be specific and concise. Provide only the requested information."""
     
-    for region in cropped_regions:
-        print(f"Analyzing region {region['id']}...")
-        
+    # Use tqdm progress bar for analyzing regions
+    for region in tqdm(cropped_regions, desc="Analyzing UI elements", unit="element"):
         # Get VLM analysis using LlamaIndex
         response = get_vlm_analysis(
             region['image'], 
